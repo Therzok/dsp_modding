@@ -32,7 +32,7 @@ namespace HarmonyLib
             }
         }
 
-        ///
+        // The recursive variant.
         static void PatchAllRecursiveInternal(this Harmony harmony, Type type)
         {
             foreach (Type child in type.GetNestedTypes())
