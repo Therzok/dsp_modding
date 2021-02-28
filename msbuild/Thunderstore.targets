@@ -68,7 +68,7 @@
   </Target>
 
   <Target Name="GeneratePublishingZip" DependsOnTargets="GenerateManifestJson" AfterTargets="AfterBuild"
-          Inputs="$(OutputPath)\**\*"
+          Inputs="$(OutputPath)\**\;@(Thunderstore)"
           Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip"
           Condition=" '$(Configuration)' == 'Release' ">
     <FindInList ItemSpecToFind="README.md" List="@(Thunderstore)" CaseSensitive="false">
@@ -78,9 +78,16 @@
     <Error Text="Missing README.md in ThunderStore ItemGroup" Condition=" '$(FoundReadme)' == '' " />
     <Warning Text="Generated package is using dirty checkout" Condition=" '$(GitIsDirty)' != '0' " />
 
+    <!-- Copy the Thunderstore metadata into OutputPath -->
+    <Copy SourceFiles="@(Thunderstore)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Retries="5" RetryDelayMilliseconds="200">
+      <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
+    </Copy>
+
     <MakeDir Directories="$(PackageOutputPath)" />
+    
     <ZipDirectory DestinationFile="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip" SourceDirectory="$(OutputPath)" Overwrite="true" />
 
+    <Delete Files="@(ToClean)" />
     <ItemGroup>
       <FileWrites Include="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip" />
     </ItemGroup>

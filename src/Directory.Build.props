@@ -39,12 +39,4 @@
       <SpecificVersion>true</SpecificVersion>
     </Reference>
   </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup>
-    <Thunderstore>
-      <Visible>True</Visible>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Thunderstore>
-  </ItemDefinitionGroup>
-
 </Project>
