@@ -79,7 +79,7 @@
     <Warning Text="Generated package is using dirty checkout" Condition=" '$(GitIsDirty)' != '0' " />
 
     <!-- Copy the Thunderstore metadata into OutputPath -->
-    <Copy SourceFiles="@(Thunderstore)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Retries="5" RetryDelayMilliseconds="200">
+    <Copy SourceFiles="@(Thunderstore)" DestinationFiles="@(Thunderstore->'$(OutputPath)\%(PackagePath)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Retries="5" RetryDelayMilliseconds="200">
       <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
     </Copy>
 
