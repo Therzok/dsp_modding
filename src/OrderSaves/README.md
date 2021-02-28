@@ -22,7 +22,7 @@ For any :bug: or issues with this mod, please report them over at [GitHub](https
 Below are two screenshots which showcase the save/load window behaviour with and without the mod.
 
 ### Unsorted
-![unsorted](images/unsorted.png)
+![unsorted](https://github.com/Therzok/dsp_modding/blob/7238ee677a1a888ec0a4639245ceb746617bf9d5/src/OrderSaves/images/unsorted.png)
 
 ### Sorted
-![sorted](images/sorted.png)
+![sorted](https://github.com/Therzok/dsp_modding/blob/7238ee677a1a888ec0a4639245ceb746617bf9d5/src/OrderSaves/images/sorted.png)
