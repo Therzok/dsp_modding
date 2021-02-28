@@ -28,14 +28,23 @@ namespace OrderSaves
         {
             _harmony.PatchAllRecursive(typeof(Patches));
 
-            Patches.Refreshed += OnListRefreshed;
-
             Logger.LogInfo("Loaded " + nameof(OrderSavesPlugin));
+        }
+
+        void OnEnable()
+        {
+            Patches.Refreshed += OnListRefreshed;
+            Logger.LogInfo("Patches hooked");
+        }
+
+        void OnDisable()
+        {
+            Patches.Refreshed -= OnListRefreshed;
+            Logger.LogInfo("Patches unhooked");
         }
 
         void OnDestroy()
         {
-            Patches.Refreshed -= OnListRefreshed;
             _harmony.UnpatchSelf();
         }
 

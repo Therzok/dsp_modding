@@ -8,6 +8,8 @@
     <UnityGameName>DSPGAME</UnityGameName>
 
     <TargetFramework>net35</TargetFramework>
+
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);VERBOSE_LOG;DEVELOPMENT</DefineConstants>
     
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

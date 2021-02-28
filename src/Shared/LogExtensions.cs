@@ -83,7 +83,7 @@ namespace BepInEx.Logging
             log.DevLogInfo(header);
             for (int i = 0; i < patches.Count; ++i)
             {
-                var patch = patches[i];
+                Patch patch = patches[i];
 
                 log.DevLogInfo(patch.GetMethod(original).FullDescription());
                 log.DevLogInfo(string.Format("[{0}] {1} {2}", patch.owner, patch.index, patch.priority));
