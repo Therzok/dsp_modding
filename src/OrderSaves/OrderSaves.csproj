@@ -6,8 +6,6 @@
   
   <ItemGroup>
     <Thunderstore Include="README.md" />
-    <Thunderstore Include="images\sorted.png" PackagePath="images\" />
-    <Thunderstore Include="images\unsorted.png" PackagePath="images\" />
   </ItemGroup>
 
 </Project>
