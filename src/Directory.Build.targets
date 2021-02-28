@@ -1,0 +1,25 @@
+<Project>
+
+  <PropertyGroup>
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);GitSetVersions</CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GitSetVersions">
+    <PropertyGroup>
+      <GitSemVer>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</GitSemVer>
+      <GitSemVerFile>$(GitSemVer).$(GitCommits)</GitSemVerFile>
+      <GitSemVerInfo>$(GitSemVerFile)-$(GitBranch)-$(GitCommit)</GitSemVerInfo>
+
+      <Version>$(GitSemVerFile)</Version>
+      <FileVersion>$(GitSemVerFile)</FileVersion>
+      <AssemblyVersion>$(GitSemVerFile)</AssemblyVersion>
+      <InformationalVersion>$(GitSemVerInfo)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\msbuild\Steam.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\msbuild\BepInEx.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\msbuild\Unity.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\msbuild\Thunderstore.targets" />
+
+</Project>

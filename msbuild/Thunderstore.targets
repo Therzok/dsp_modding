@@ -1,0 +1,88 @@
+<Project>
+  <UsingTask TaskName="GenerateManifestDependenciesList"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Dependencies ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <Result ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Text" />
+      <Code Type="Fragment" Language="C#"><![CDATA[
+          var sb = new StringBuilder();
+          sb.Append("[ ");
+
+          if (Dependencies.Length > 0) {
+            foreach (var item in Dependencies) {
+              sb.Append('"');
+              sb.Append(item.ItemSpec);
+              sb.Append('"');
+              sb.Append(',');
+            }
+            sb.Remove(sb.Length - 1, 1);
+          }
+          sb.Append(" ]");
+          
+          Result = sb.ToString();
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  
+  <Target Name="GenerateManifestJson" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)manifest.json">
+    <Error Text="Missing AssemblyName" Condition=" '$(AssemblyName)' == '' "/>
+    <Error Text="Missing Version" Condition=" '$(Version)' == '' "/>
+    <Error Text="Missing RepositoryUrl" Condition=" '$(RepositoryUrl)' == '' "/>
+    <Error Text="Missing Description" Condition=" '$(Description)' == '' "/>
+
+    <GenerateManifestDependenciesList Dependencies="@(ManifestDependencies)">
+      <Output PropertyName="_ManifestDependencies" TaskParameter="Result" />
+    </GenerateManifestDependenciesList>
+
+    <PropertyGroup>
+      <ManifestJsonFile>$(IntermediateOutputPath)manifest.json</ManifestJsonFile>
+      <ManifestJsonContent>
+        <![CDATA[
+{
+  "name": "$(AssemblyName)",
+  "version_number": "$(GitSemVer)",
+  "website_url": "$(RepositoryUrl)",
+  "description": "$(Description)",
+  "dependencies": $(_ManifestDependencies)
+}
+]]>
+      </ManifestJsonContent>
+    </PropertyGroup>
+    
+    
+    <WriteLinesToFile File="$(ManifestJsonFile)" Lines="$(ManifestJsonContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(ManifestJsonFile)" />
+
+      <Thunderstore Include="$(ManifestJsonFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GeneratePublishingZip" DependsOnTargets="GenerateManifestJson" AfterTargets="AfterBuild"
+          Inputs="$(OutputPath)\**\*"
+          Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip"
+          Condition=" '$(Configuration)' == 'Release' ">
+    <FindInList ItemSpecToFind="README.md" List="@(Thunderstore)" CaseSensitive="false">
+      <Output TaskParameter="ItemFound" PropertyName="FoundReadme" />
+    </FindInList>
+
+    <Error Text="Missing README.md in ThunderStore ItemGroup" Condition=" '$(FoundReadme)' == '' " />
+    <Warning Text="Generated package is using dirty checkout" Condition=" '$(GitIsDirty)' != '0' " />
+
+    <MakeDir Directories="$(PackageOutputPath)" />
+    <ZipDirectory DestinationFile="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip" SourceDirectory="$(OutputPath)" Overwrite="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip" />
+    </ItemGroup>
+  </Target>
+</Project>

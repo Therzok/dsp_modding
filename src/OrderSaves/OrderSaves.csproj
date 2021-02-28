@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Order Saves</AssemblyTitle>
+    <Description>Orders the saves in the save/load menu to sort them by having the newest come first</Description>
+    
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);VERBOSE_LOG</DefineConstants>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Thunderstore Include="README.md" />
+  </ItemGroup>
+
+</Project>

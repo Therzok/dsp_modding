@@ -1,0 +1,48 @@
+<Project>
+  <!-- Generate PluginInfo.cs file-->
+
+  <PropertyGroup>
+    <OutputPath>$(SteamGameInstallLocation)BepInEx\plugins\$(AssemblyName)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+
+  <Target Name="GeneratePluginVersionInfo" DependsOnTargets="GitSetVersions" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)$(MSBuildProjectName).PluginInfo.g.cs">
+    <PropertyGroup>
+      <PluginInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).PluginInfo.g.cs</PluginInfoFile>
+      <PluginInfoContent>
+        <![CDATA[
+partial class ThisAssembly
+{
+    public partial class Plugin
+    {
+      public const string GUID = "org.$(Company).dsp.$(AssemblyName)"%3B
+      public const string Name = "$(AssemblyTitle)"%3B
+      public const string Version = "$(GitSemVerFile)"%3B
+      public const string HarmonyGUID = GUID + Version%3B
+    }
+}
+]]>
+      </PluginInfoContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(PluginInfoFile)" Lines="$(PluginInfoContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+    <ItemGroup>
+      <Compile Remove="$(PluginInfoFile)" />
+      <Compile Include="$(PluginInfoFile)" />
+      <FileWrites Include="$(PluginInfoFile)" />
+    </ItemGroup>
+  </Target>
+  
+  <Target Name="ResolveBepInExReferences" DependsOnTargets="EnsureSteamGameFound" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <OutputPath>$(SteamGameInstallLocation)BepInEx\plugins\$(AssemblyName)\</OutputPath>
+      <OutDir>$(OutputPath)</OutDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="@(BIEReference->'$(SteamGameInstallLocation)BepInEx\core\%(Identity)')" />
+    </ItemGroup>
+  </Target>
+
+</Project>

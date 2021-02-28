@@ -1,0 +1,18 @@
+<Project>
+  <ItemGroup Label="BepInExReferences">
+    <PackageReference Include="BepInEx.Analyzers" Version="1.0.4" />
+    
+    <BIEReference Include="0Harmony.dll" />
+
+    <BIEReference Include="BepInEx.dll" />
+    <BIEReference Include="BepInEx.Preloader.dll" />
+
+    <BIEReference Include="Mono.Cecil.dll" />
+    <BIEReference Include="Mono.Cecil.Mdb.dll" />
+    <BIEReference Include="Mono.Cecil.Pdb.dll" />
+    <BIEReference Include="Mono.Cecil.Rocks.dll" />
+
+    <BIEReference Include="MonoMod.RuntimeDetour.dll" />
+    <BIEReference Include="MonoMod.Utils.dll" />
+  </ItemGroup>
+</Project>

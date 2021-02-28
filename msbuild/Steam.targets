@@ -1,0 +1,109 @@
+<Project>
+  <PropertyGroup>
+    <SteamGameCacheFile>$(MSBuildThisFileDirectory)\SteamGameCache.txt</SteamGameCacheFile>
+    <SteamGameInstallLocation Condition=" '$(SteamGameInstallLocation)' == '' AND Exists('$(SteamGameCacheFile)')">$([System.IO.File]::ReadAllText('$(SteamGameCacheFile)'))</SteamGameInstallLocation>
+    <SteamGameInstallLocation>$([MSBuild]::EnsureTrailingSlash('$(SteamGameInstallLocation.TrimEnd())'))</SteamGameInstallLocation>
+  </PropertyGroup>
+  
+  <UsingTask TaskName="FindSteamGameInstallLocation"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <SteamLocation ParameterType="System.String" Required="true" />
+      <GameId ParameterType="System.Int32" Required="true" />
+      <Result ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+
+    <Task>      
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Text" />
+      <Code Type="Method" Language="C#">
+        <![CDATA[
+        public override bool Execute()
+        {
+          if (!Directory.Exists(SteamLocation)) {
+            Log.LogError("Steam library folder '{0}' does not exist", SteamLocation);
+            return false;
+          }
+          
+          var steamFolders = new List<string>();
+          
+          steamFolders.Add(SteamLocation);
+          
+          var tabs = new char[] { '\t' };
+          var configurationFile = Path.Combine(SteamLocation, "steamapps", "libraryfolders.vdf");
+          foreach (var line in File.ReadAllLines(configurationFile)) {
+            int discard;
+            var split = line.Split(tabs, StringSplitOptions.RemoveEmptyEntries);
+            if (split.Length != 2 || !int.TryParse(split[0], out discard))
+              continue;
+
+            var value = split[1].Replace("\\\\", "\\");
+            steamFolders.Add(value);
+          }
+          
+          foreach (var f in steamFolders) {
+            Log.LogMessage("Steam library folder: {0}", f);
+          }
+          
+          var gameAcfFileName = string.Format("appmanifest_{0}.acf", GameId);
+          var gameAcf = steamFolders
+            .Select(folder => Path.Combine(folder, "steamapps", gameAcfFileName))
+            .First(file => File.Exists(file));
+            
+          var sep = Path.DirectorySeparatorChar.ToString();
+          foreach (var line in File.ReadAllLines(gameAcf)) {
+            var split = line.Split(tabs, StringSplitOptions.RemoveEmptyEntries);
+            if (split.Length != 2)
+              continue;
+
+            var key = split[0].Trim('"');
+            var value = split[1].Trim('"');
+              
+            if ("installdir".Equals(key, StringComparison.OrdinalIgnoreCase)) {
+              var steamDir = Path.GetDirectoryName(gameAcf);
+              var gameDir = Path.Combine(steamDir, "common", value);
+              if (Directory.Exists(gameDir)) {
+
+                if (!gameDir.EndsWith(sep)) {
+                  gameDir += sep;
+                }
+                Result = gameDir;
+                return true;
+              }
+            }
+          }
+          
+          Log.LogError("Could not find Steam Game ID: {0}", GameId);
+          return false;
+        }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="EnsureSteamGameFound" BeforeTargets="PrepareForBuild" DependsOnTargets="ComputeSteamGameLocation">
+  </Target>
+
+  <Target Name="ComputeSteamGameLocation" BeforeTargets="PrepareForBuild" Inputs="$(MSBuildAllProjects);$(SteamGameInstallLocation)" Outputs="$(SteamGameCacheFile)" Condition="!Exists('$(SteamGameInstallLocation)')">
+    <Error Text="'SteamGameId' prop not set" Condition=" '$(SteamGameId)' == '' " />
+
+    <Message Importance="high" Text="Resolving Steam install location from Disk" />
+    <FindSteamGameInstallLocation
+      SteamLocation="$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam@InstallPath)\"
+      GameId="$(SteamGameId)">
+      <Output TaskParameter="Result" PropertyName="SteamGameInstallLocation" />
+    </FindSteamGameInstallLocation>
+
+    <Message Importance="high" Text="Found Steam Install $(SteamGameInstallLocation)" />
+
+    <WriteLinesToFile File="$(SteamGameCacheFile)" Lines="$(SteamGameInstallLocation)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(SteamGameCacheFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

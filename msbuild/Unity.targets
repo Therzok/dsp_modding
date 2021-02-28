@@ -1,0 +1,11 @@
+<Project>
+  <Target Name="ResolveUnityReferences" DependsOnTargets="EnsureSteamGameFound" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <UnityAssembliesPath>$(SteamGameInstallLocation)$(UnityGameName)_Data\Managed\</UnityAssembliesPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="@(UnityReference->'$(UnityAssembliesPath)%(Identity)')" />
+    </ItemGroup>
+  </Target>
+</Project>

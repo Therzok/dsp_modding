@@ -1,0 +1,24 @@
+<Project>
+  <ItemGroup Label="Unity BCL">
+    <PackageReference Include="jnm2.ReferenceAssemblies.net35" Version="1.0.1"  Condition=" '$(TargetFrameworkVersion)' == '3.5' " PrivateAssets="All" />
+    <!-- Other target frameworks? -->
+
+    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.10.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="UnityReferences">    
+    <UnityReference Include="Assembly-CSharp.dll" />
+
+    <UnityReference Include="Mono.Posix.dll" />
+
+    <UnityReference Include="UnityEngine.dll" />
+    <UnityReference Include="UnityEngine.AssetBundleModule.dll" />
+    <UnityReference Include="UnityEngine.CoreModule.dll" />
+    <UnityReference Include="UnityEngine.IMGUIModule.dll" />
+    <UnityReference Include="UnityEngine.TextRenderingModule.dll" />
+    <UnityReference Include="UnityEngine.UI.dll" />
+    <UnityReference Include="UnityEngine.UIElementsModule.dll" />
+    <UnityReference Include="UnityEngine.UIModule.dll" />
+    <UnityReference Include="Unity.TextMeshPro.dll" />
+  </ItemGroup>
+</Project>
