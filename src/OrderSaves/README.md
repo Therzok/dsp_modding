@@ -6,11 +6,11 @@ There is currently no configuration to the sort order.
 
 ##  Installing
 
-:hammer_and_wrench: Just install via [Thunderstore](https://dsp.thunderstore.io), it will automatically download everything needed.
+🛠 Just install via [Thunderstore](https://dsp.thunderstore.io), it will automatically download everything needed.
 
 To manually install, ensure [BepInEx](https://github.com/BepInEx/BepInEx) is installed first and then drop the `OrderSaves.dll` file into `$DSP_GAME\BepInEx\Plugins\OrderSaves\OrderSaves.dll`.
 
-For any :bug: or issues with this mod, please report them over at [GitHub](https://github.com/Therzok/dsp_modding/issues/new).
+For any 🐛 or issues with this mod, please report them over at [GitHub](https://github.com/Therzok/dsp_modding/issues/new).
 
 ## Changelog
 
@@ -22,7 +22,7 @@ For any :bug: or issues with this mod, please report them over at [GitHub](https
 Below are two screenshots which showcase the save/load window behaviour with and without the mod.
 
 ### Unsorted
-![unsorted](https://github.com/Therzok/dsp_modding/blob/7238ee677a1a888ec0a4639245ceb746617bf9d5/src/OrderSaves/images/unsorted.png)
+![unsorted](./images/unsorted.png)
 
 ### Sorted
-![sorted](https://github.com/Therzok/dsp_modding/blob/7238ee677a1a888ec0a4639245ceb746617bf9d5/src/OrderSaves/images/sorted.png)
+![sorted](./images/sorted.png)
