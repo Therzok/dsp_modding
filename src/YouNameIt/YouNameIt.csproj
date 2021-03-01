@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>You Name It</AssemblyTitle>
+    <Description>Uses the names assigned to the logistics stations to show a label on top of them in planet mode</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PrefabBlocks\PrefabBlocks.csproj" ReferenceOutputAssembly="false" />
+    <PluginReference Include="PrefabBlocks" Author="Therzok" Assembly="PrefabBlocks.dll" PreferredVersion="0.1.0"/>
+
+    <Thunderstore Include="README.md" />
+  </ItemGroup>
+</Project>

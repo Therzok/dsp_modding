@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
+    <!-- Shared cache file between all projects -->
     <SteamGameCacheFile>$(MSBuildThisFileDirectory)\SteamGameCache.txt</SteamGameCacheFile>
+    
     <SteamGameInstallLocation Condition=" '$(SteamGameInstallLocation)' == '' AND Exists('$(SteamGameCacheFile)')">$([System.IO.File]::ReadAllText('$(SteamGameCacheFile)'))</SteamGameInstallLocation>
     <SteamGameInstallLocation>$([MSBuild]::EnsureTrailingSlash('$(SteamGameInstallLocation.TrimEnd())'))</SteamGameInstallLocation>
   </PropertyGroup>
@@ -22,59 +24,72 @@
       <Using Namespace="System.Text" />
       <Code Type="Method" Language="C#">
         <![CDATA[
-        public override bool Execute()
+        IEnumerable<KeyValuePair<string, string>> EnumerateKeysValues(string path)
         {
-          if (!Directory.Exists(SteamLocation)) {
-            Log.LogError("Steam library folder '{0}' does not exist", SteamLocation);
-            return false;
+          var separators = new char[] { '\t', '"' };
+          using (StreamReader sr = File.OpenText(path)
+          {
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+              int discard;
+              var split = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+              if (split.Length != 2 || !int.TryParse(split[0], out discard))
+                continue;
+                
+              yield return new KeyValuePair<string, string>(split[0], split[1]);
+            }
           }
-          
+        }
+
+        List<string> GetSteamLibraryLocations()
+        {
           var steamFolders = new List<string>();
           
           steamFolders.Add(SteamLocation);
           
-          var tabs = new char[] { '\t' };
           var configurationFile = Path.Combine(SteamLocation, "steamapps", "libraryfolders.vdf");
-          foreach (var line in File.ReadAllLines(configurationFile)) {
+          foreach (var kvp in EnumerateKeysValues(configurationFile)) {
             int discard;
-            var split = line.Split(tabs, StringSplitOptions.RemoveEmptyEntries);
-            if (split.Length != 2 || !int.TryParse(split[0], out discard))
-              continue;
-
-            var value = split[1].Replace("\\\\", "\\");
-            steamFolders.Add(value);
+            if (int.TryParse(kvp.Key, out discard))
+              steamFolders.Add(kvp.Value);
           }
           
           foreach (var f in steamFolders) {
             Log.LogMessage("Steam library folder: {0}", f);
           }
           
+          return steamFolders;
+        }
+        
+        public override bool Execute()
+        {
+          if (!Directory.Exists(SteamLocation)) {
+            Log.LogError("Steam library folder '{0}' does not exist", SteamLocation);
+            return false;
+          }
+
           var gameAcfFileName = string.Format("appmanifest_{0}.acf", GameId);
-          var gameAcf = steamFolders
+          var gameAcf = GetSteamLibraryLocations()
             .Select(folder => Path.Combine(folder, "steamapps", gameAcfFileName))
             .First(file => File.Exists(file));
             
           var sep = Path.DirectorySeparatorChar.ToString();
-          foreach (var line in File.ReadAllLines(gameAcf)) {
-            var split = line.Split(tabs, StringSplitOptions.RemoveEmptyEntries);
-            if (split.Length != 2)
+          foreach (var kvp in EnumerateKeysValues(gameAcf)) {
+            if (!"installdir".Equals(key, StringComparison.OrdinalIgnoreCase))
               continue;
-
-            var key = split[0].Trim('"');
-            var value = split[1].Trim('"');
+            
+            var value = value.Replace(sep + sep, sep);
+            var steamDir = Path.GetDirectoryName(gameAcf);
+            var gameDir = Path.Combine(steamDir, "common", value);
+            if (!Directory.Exists(gameDir))
+              continue;
               
-            if ("installdir".Equals(key, StringComparison.OrdinalIgnoreCase)) {
-              var steamDir = Path.GetDirectoryName(gameAcf);
-              var gameDir = Path.Combine(steamDir, "common", value);
-              if (Directory.Exists(gameDir)) {
-
-                if (!gameDir.EndsWith(sep)) {
-                  gameDir += sep;
-                }
-                Result = gameDir;
-                return true;
-              }
+            if (!gameDir.EndsWith(sep)) {
+              gameDir += sep;
             }
+            Result = gameDir;
+            return true;
           }
           
           Log.LogError("Could not find Steam Game ID: {0}", GameId);
@@ -85,10 +100,10 @@
     </Task>
   </UsingTask>
 
-  <Target Name="EnsureSteamGameFound" BeforeTargets="PrepareForBuild" DependsOnTargets="ComputeSteamGameLocation">
-  </Target>
-
-  <Target Name="ComputeSteamGameLocation" BeforeTargets="PrepareForBuild" Inputs="$(MSBuildAllProjects);$(SteamGameInstallLocation)" Outputs="$(SteamGameCacheFile)" Condition="!Exists('$(SteamGameInstallLocation)')">
+  <Target Name="FindSteamGame"
+          Inputs="$(MSBuildAllProjects);$(SteamGameInstallLocation)"
+          Outputs="$(SteamGameCacheFile)"
+          Condition="!Exists('$(SteamGameInstallLocation)')">
     <Error Text="'SteamGameId' prop not set" Condition=" '$(SteamGameId)' == '' " />
 
     <Message Importance="high" Text="Resolving Steam install location from Disk" />

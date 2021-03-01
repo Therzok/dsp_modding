@@ -3,12 +3,46 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6098CA01-6817-408F-B7DF-9008C48750AA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{6098CA01-6817-408F-B7DF-9008C48750AA}"
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderSaves", "OrderSaves\OrderSaves.csproj", "{D323712C-5082-4C9E-BE83-D84A6F8A99CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SaveTheWindows", "SaveTheWindows\SaveTheWindows.csproj", "{568557D7-FD7C-4F61-AEF4-397BF364E550}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouNameIt", "YouNameIt\YouNameIt.csproj", "{951F75FA-2DEA-4859-9D92-15E2F9722765}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrefabBlocks", "PrefabBlocks\PrefabBlocks.csproj", "{D5253E1D-20C8-496C-886A-D31757C546BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSBuild", "MSBuild", "{C5D307A5-2F9C-4D14-83CA-9E8465982BC8}"
+	ProjectSection(SolutionItems) = preProject
+		..\msbuild\BepInEx.props = ..\msbuild\BepInEx.props
+		..\msbuild\BepInEx.targets = ..\msbuild\BepInEx.targets
+		..\msbuild\Config.props = ..\msbuild\Config.props
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		..\msbuild\Steam.targets = ..\msbuild\Steam.targets
+		..\msbuild\Thunderstore.props = ..\msbuild\Thunderstore.props
+		..\msbuild\Thunderstore.targets = ..\msbuild\Thunderstore.targets
+		..\msbuild\Unity.props = ..\msbuild\Unity.props
+		..\msbuild\Unity.targets = ..\msbuild\Unity.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThunderstoreTemplates", "ThunderstoreTemplates", "{44F86EDC-6512-4522-BF94-2022A88A6294}"
+	ProjectSection(SolutionItems) = preProject
+		..\Thunderstore\dsp_logo_1024.png = ..\Thunderstore\dsp_logo_1024.png
+		..\Thunderstore\dsp_logo_256.png = ..\Thunderstore\dsp_logo_256.png
+		..\Thunderstore\README.md = ..\Thunderstore\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6B952F3E-7BFD-4EA3-9C87-30908567FCF6}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\README.md = ..\docs\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +54,18 @@ Global
 		{D323712C-5082-4C9E-BE83-D84A6F8A99CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D323712C-5082-4C9E-BE83-D84A6F8A99CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D323712C-5082-4C9E-BE83-D84A6F8A99CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{568557D7-FD7C-4F61-AEF4-397BF364E550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{568557D7-FD7C-4F61-AEF4-397BF364E550}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{568557D7-FD7C-4F61-AEF4-397BF364E550}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{568557D7-FD7C-4F61-AEF4-397BF364E550}.Release|Any CPU.Build.0 = Release|Any CPU
+		{951F75FA-2DEA-4859-9D92-15E2F9722765}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{951F75FA-2DEA-4859-9D92-15E2F9722765}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{951F75FA-2DEA-4859-9D92-15E2F9722765}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{951F75FA-2DEA-4859-9D92-15E2F9722765}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5253E1D-20C8-496C-886A-D31757C546BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5253E1D-20C8-496C-886A-D31757C546BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5253E1D-20C8-496C-886A-D31757C546BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5253E1D-20C8-496C-886A-D31757C546BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

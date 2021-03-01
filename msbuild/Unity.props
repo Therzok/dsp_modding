@@ -1,12 +1,18 @@
 <Project>
-  <ItemGroup Label="Unity BCL">
-    <PackageReference Include="jnm2.ReferenceAssemblies.net35" Version="1.0.1"  Condition=" '$(TargetFrameworkVersion)' == '3.5' " PrivateAssets="All" />
-    <!-- Other target frameworks? -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
+    <!-- Need pdb2mdb, they're useless until then -->
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
 
-    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.10.0" />
+  <!-- Other target frameworks? -->
+  <ItemGroup Label="Unity BCL .NET 3.5" Condition=" '$(TargetFramework)' == 'net35' ">
+    <PackageReference Include="jnm2.ReferenceAssemblies.net35" Version="1.0.1" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Label="UnityReferences">    
+  <ItemGroup Label="UnityReferences">
+    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.10.0" PrivateAssets="All" />
+ 
     <UnityReference Include="Assembly-CSharp.dll" />
 
     <UnityReference Include="Mono.Posix.dll" />

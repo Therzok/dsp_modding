@@ -8,7 +8,7 @@
     <CoreCompileDependsOn>$(CoreCompileDependsOn);GitSetVersions</CoreCompileDependsOn>
   </PropertyGroup>
 
-  <Target Name="GitSetVersions">
+  <Target Name="GitSetVersions" DependsOnTargets="GitInfo">
     <PropertyGroup>
       <GitSemVer>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</GitSemVer>
       <GitSemVerFile>$(GitSemVer).$(GitCommits)</GitSemVerFile>

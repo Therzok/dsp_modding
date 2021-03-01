@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup Label="Build Configuration">
+    <RepositoryUrl>https://github.com/Therzok/dsp_modding</RepositoryUrl>
+    <Company>Therzok</Company>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
+    
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);VERBOSE_LOG;DEVELOPMENT</DefineConstants>
+
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Dyson Sphere Program">
+    <SteamGameId>1366540</SteamGameId>
+    <UnityGameName>DSPGAME</UnityGameName>
+    <TargetFramework>net35</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

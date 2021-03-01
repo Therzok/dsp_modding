@@ -1,11 +1,19 @@
 <Project>
-  <Target Name="ResolveUnityReferences" DependsOnTargets="EnsureSteamGameFound" BeforeTargets="PrepareForBuild">
+  <Target Name="ResolveUnityReferences"
+          DependsOnTargets="FindSteamGame" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <UnityAssembliesPath>$(SteamGameInstallLocation)$(UnityGameName)_Data\Managed\</UnityAssembliesPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="@(UnityReference->'$(UnityAssembliesPath)%(Identity)')" />
+      <Reference Include="@(UnityReference->'$(UnityAssembliesPath)%(Identity)')" Private="False" SpecificVersion="true"/>
     </ItemGroup>
+  </Target>
+
+  <Target Name="PublishGameXmlDocumentation"
+          DependsOnTargets="FindSteamGame"
+          AfterTargets="AfterBuild"
+          Inputs="$(MSBuildThisFileDirectory)..\docs\Assembly-CSharp.xml"
+          Outputs="$(SteamGameInstallLocation)$(UnityGameName)_Data\Managed\Assembly-CSharp.xml">
   </Target>
 </Project>

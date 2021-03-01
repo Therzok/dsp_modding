@@ -38,7 +38,11 @@
     <Error Text="Missing RepositoryUrl" Condition=" '$(RepositoryUrl)' == '' "/>
     <Error Text="Missing Description" Condition=" '$(Description)' == '' "/>
 
-    <GenerateManifestDependenciesList Dependencies="@(ManifestDependencies)">
+    <ItemGroup>
+      <ManifestDependency Include="@(PluginReference->'%(Author)-%(Identity)-%(PreferredVersion)')" />
+    </ItemGroup>
+
+    <GenerateManifestDependenciesList Dependencies="@(ManifestDependency)">
       <Output PropertyName="_ManifestDependencies" TaskParameter="Result" />
     </GenerateManifestDependenciesList>
 
@@ -58,38 +62,58 @@
     </PropertyGroup>
     
     
-    <WriteLinesToFile File="$(ManifestJsonFile)" Lines="$(ManifestJsonContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(ManifestJsonFile)"
+                      Lines="$(ManifestJsonContent)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
 
     <ItemGroup>
       <FileWrites Include="$(ManifestJsonFile)" />
 
       <Thunderstore Include="$(ManifestJsonFile)" />
+      <Thunderstore Include="$(OutputPath)\**\*" />
     </ItemGroup>
   </Target>
 
-  <Target Name="GeneratePublishingZip" DependsOnTargets="GenerateManifestJson" AfterTargets="AfterBuild"
-          Inputs="$(OutputPath)\**\;@(Thunderstore)"
-          Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip"
-          Condition=" '$(Configuration)' == 'Release' ">
-    <FindInList ItemSpecToFind="README.md" List="@(Thunderstore)" CaseSensitive="false">
+  <Target Name="GeneratePublishingZip"
+          DependsOnTargets="GenerateManifestJson"
+          AfterTargets="AfterBuild"
+          Inputs="@(Thunderstore)"
+          Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip">
+
+    <PropertyGroup>
+      <PackageName>$(Company)-$(AssemblyName)-$(GitSemVerInfo)</PackageName>
+      <PackageDir>$(PackageOutputPath)\$(PackageName)\</PackageDir>
+      <PackageZip>$(PackageOutputPath)\$(PackageName).zip</PackageZip>
+    </PropertyGroup>
+    
+    <FindInList ItemSpecToFind="README.md"
+                List="@(Thunderstore)"
+                CaseSensitive="false">
       <Output TaskParameter="ItemFound" PropertyName="FoundReadme" />
     </FindInList>
 
     <Error Text="Missing README.md in ThunderStore ItemGroup" Condition=" '$(FoundReadme)' == '' " />
     <Warning Text="Generated package is using dirty checkout" Condition=" '$(GitIsDirty)' != '0' " />
 
-    <!-- Copy the Thunderstore metadata into OutputPath -->
-    <Copy SourceFiles="@(Thunderstore)" DestinationFiles="@(Thunderstore->'$(OutputPath)\%(PackagePath)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Retries="5" RetryDelayMilliseconds="200">
+    <!-- Copy the Thunderstore files into a directory -->
+    <MakeDir Directories="$(PackageDir)" />
+    <Copy SourceFiles="@(Thunderstore)"
+          DestinationFiles="@(Thunderstore->'$(PackageDir)%(PackagePath)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Retries="5"
+          RetryDelayMilliseconds="200">
       <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
     </Copy>
 
     <MakeDir Directories="$(PackageOutputPath)" />
     
-    <ZipDirectory DestinationFile="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip" SourceDirectory="$(OutputPath)" Overwrite="true" />
+    <ZipDirectory DestinationFile="$(PackageZip)"
+                  SourceDirectory="$(PackageDir)"
+                  Overwrite="true" />
 
-    <Delete Files="@(ToClean)" />
     <ItemGroup>
-      <FileWrites Include="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip" />
+      <FileWrites Include="@(CopiedFiles);$(PackageZip)" />
     </ItemGroup>
   </Target>
 </Project>

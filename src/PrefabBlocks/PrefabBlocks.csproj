@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Prefab Building Blocks</AssemblyTitle>
+    <Description>Contains the simplest form of prefabs that can be used to construct new game objects</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Thunderstore Include="prefabblocks.manifest" />
+    <Thunderstore Include="README.md" />
+  </ItemGroup>
+
+</Project>
