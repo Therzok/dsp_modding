@@ -48,7 +48,11 @@ namespace YouNameIt
 
                 for (int i = 0; i < _texts.Length; ++i)
                 {
-                    _texts[i].gameObject.SetActive(false);
+                    TextMeshPro text = _texts[i];
+                    if (text != null)
+                    {
+                        text.gameObject.SetActive(false);
+                    }
                 }
             }
 

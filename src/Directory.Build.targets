@@ -1,10 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <GitVersionFile>$(MSBuildProjectDirectory)\GitInfo.txt</GitVersionFile>
-    <GitDefaultBranch>main</GitDefaultBranch>
-    <GitInfoReportImportance>High</GitInfoReportImportance>
-
     <CoreCompileDependsOn>$(CoreCompileDependsOn);GitSetVersions</CoreCompileDependsOn>
   </PropertyGroup>
 

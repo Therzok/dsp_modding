@@ -18,6 +18,9 @@ namespace PrefabBlocks
     /// </summary>
     public sealed class PrefabManager
     {
+        /// <summary>
+        /// The instance through which to request prefabs.
+        /// </summary>
         public static readonly PrefabManager Instance = new PrefabManager("PrefabBlocks.prefabblocks");
 
         readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(PrefabManager));
@@ -51,7 +54,8 @@ namespace PrefabBlocks
 
         internal void Destroy()
         {
-            _assets.Unload(true);
+            if (_assets != null)
+                _assets.Unload(true);
         }
 
         internal void Initialize()

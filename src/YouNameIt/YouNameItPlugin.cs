@@ -18,7 +18,7 @@ namespace YouNameIt
     /// Main plugin entry point.
     /// </summary>
     [BepInPlugin(ThisAssembly.Plugin.GUID, ThisAssembly.Plugin.Name, ThisAssembly.Plugin.Version)]
-    [BepInDependency("org.Therzok.dsp.PrefabBlocks")]
+    [BepInDependency(ThisAssembly.Plugin.Authors + "." + nameof(PrefabBlocks))]
     public sealed class YouNameItPlugin : BaseUnityPlugin
     {
         readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);

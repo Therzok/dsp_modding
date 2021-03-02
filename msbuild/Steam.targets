@@ -2,6 +2,8 @@
   <PropertyGroup>
     <!-- Shared cache file between all projects -->
     <SteamGameCacheFile>$(MSBuildThisFileDirectory)\SteamGameCache.txt</SteamGameCacheFile>
+
+    <SteamInstallLocation>$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam@InstallPath)\</SteamInstallLocation>
     
     <SteamGameInstallLocation Condition=" '$(SteamGameInstallLocation)' == '' AND Exists('$(SteamGameCacheFile)')">$([System.IO.File]::ReadAllText('$(SteamGameCacheFile)'))</SteamGameInstallLocation>
     <SteamGameInstallLocation>$([MSBuild]::EnsureTrailingSlash('$(SteamGameInstallLocation.TrimEnd())'))</SteamGameInstallLocation>
@@ -103,12 +105,13 @@
   <Target Name="FindSteamGame"
           Inputs="$(MSBuildAllProjects);$(SteamGameInstallLocation)"
           Outputs="$(SteamGameCacheFile)"
+          Returns="$(SteamGameInstallLocation)"
           Condition="!Exists('$(SteamGameInstallLocation)')">
     <Error Text="'SteamGameId' prop not set" Condition=" '$(SteamGameId)' == '' " />
 
     <Message Importance="high" Text="Resolving Steam install location from Disk" />
     <FindSteamGameInstallLocation
-      SteamLocation="$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam@InstallPath)\"
+      SteamLocation="$(SteamInstallLocation)"
       GameId="$(SteamGameId)">
       <Output TaskParameter="Result" PropertyName="SteamGameInstallLocation" />
     </FindSteamGameInstallLocation>

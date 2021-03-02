@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Launch DSP": {
+      "commandName": "Executable",
+      "executablePath": "$(SteamInstallLocation)/steam.exe",
+      "commandLineArgs": "-applaunch $(SteamGameId)",
+      "commandLineArgs_comment": "Running with browser protocol does not work ¯\\_(ツ)_/¯"
+    }
+  }
+}

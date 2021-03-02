@@ -12,7 +12,6 @@ namespace BepInEx.Logging
 {
     static class LogExtensions
     {
-
         [Conditional("VERBOSE_LOG")]
         public static void DevLogInfo(this ManualLogSource log, string message)
         {
@@ -23,6 +22,25 @@ namespace BepInEx.Logging
         public static void DevLog(this ManualLogSource log, LogLevel level, string message)
         {
             log.Log(level, message);
+        }
+
+        [Conditional("VERBOSE_LOG")]
+        public static void DevLog<T>(this ManualLogSource log, T[] array, string message)
+        {
+            log.DevLog(array, x => x.ToString(), message);
+        }
+
+        [Conditional("VERBOSE_LOG")]
+        public static void DevLog<T>(this ManualLogSource log, T[] array, Func<T, string> transform, string message)
+        {
+            log.LogInfo(message);
+            log.LogInfo(typeof(T).FullName + "[" + array.Length + "]:");
+            for (int i = 0; i < array.Length; ++i)
+            {
+                var item = array[i];
+                log.LogInfo("  " + transform(item));
+            }
+            log.LogInfo("");
         }
 
 #if VERBOSE_LOG

@@ -79,7 +79,8 @@
           DependsOnTargets="GenerateManifestJson"
           AfterTargets="AfterBuild"
           Inputs="@(Thunderstore)"
-          Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip">
+          Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip"
+          Condition=" '$(Configuration)' == 'Release' ">
 
     <PropertyGroup>
       <PackageName>$(Company)-$(AssemblyName)-$(GitSemVerInfo)</PackageName>

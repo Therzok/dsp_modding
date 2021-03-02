@@ -18,6 +18,16 @@
     <TargetFramework>net35</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Label="GitInfo Setup">
+    <GitVersionFile>$(MSBuildProjectDirectory)\GitInfo.txt</GitVersionFile>
+    <GitDefaultBranch>main</GitDefaultBranch>
+    <GitInfoReportImportance Condition=" '$(Configuration)' == 'Release' ">High</GitInfoReportImportance>
+
+    <!-- Optimizations -->
+    <GitRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\'))</GitRoot>
+    <GitDir>$([System.IO.Path]::Combine('$(GitRoot)', '.git'))</GitDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
   </ItemGroup>
