@@ -22,13 +22,22 @@ namespace PrefabBlocks
         /// The instance through which to request prefabs.
         /// </summary>
         public static readonly PrefabManager Instance = new PrefabManager("PrefabBlocks.prefabblocks");
-
-        readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(PrefabManager));
         readonly string _bundleResourceName;
         bool _initialized;
 
+        /// <summary>
+        /// Object with TextMeshPro component, worldspace UI
+        /// </summary>
         public GameObject WorldText;
+
+        /// <summary>
+        /// Simple 3D plane with a material.
+        /// </summary>
         public GameObject WorldPanel;
+
+        /// <summary>
+        /// Object with TextMeshProUGUI component, overlay UI.
+        /// </summary>
         public GameObject UIText;
 
         AssetBundle _assets;
@@ -49,13 +58,18 @@ namespace PrefabBlocks
         internal void Unload()
         {
             _initialized = false;
-            _assets.Unload(false);
+            if (_assets != null)
+            {
+                _assets.Unload(false);
+            }
         }
 
         internal void Destroy()
         {
             if (_assets != null)
+            {
                 _assets.Unload(true);
+            }
         }
 
         internal void Initialize()
@@ -72,8 +86,8 @@ namespace PrefabBlocks
 
             FixTextMeshProMissing();
 
-            WorldText = _assets.LoadAsset<GameObject>("Assets/worldtext.prefab");
             WorldPanel = _assets.LoadAsset<GameObject>("Assets/worldpanel.prefab");
+            WorldText = _assets.LoadAsset<GameObject>("Assets/worldtext.prefab");
             UIText = _assets.LoadAsset<GameObject>("Assets/uitext.prefab");
         }
 
@@ -82,8 +96,7 @@ namespace PrefabBlocks
             const string TMPPrefix = "Assets/textmesh pro/resources";
 
             // Check if we have a default style sheet set, if we do, we're fine.
-            TMP_StyleSheet tryOriginal = Resources.Load<TMP_StyleSheet>("Style Sheets/Default Style Sheet"); ;
-            if (tryOriginal != null)
+            if (Resources.Load<TMP_StyleSheet>("Style Sheets/Default Style Sheet") != null)
             {
                 // Already present, so no need to do anything.
                 return;

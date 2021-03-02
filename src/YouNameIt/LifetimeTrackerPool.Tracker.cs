@@ -104,11 +104,11 @@ namespace YouNameIt
                 {
                     go.SetActive(true);
 
-                    _log.DevLogInfo("Station[" + station.id + "] added: " + station.name);
+                    _log.DevLog("Station[" + station.id + "] added: " + station.name);
                 }
                 else
                 {
-                    _log.DevLogInfo("Station[" + station.id + "] added inactive");
+                    _log.DevLog("Station[" + station.id + "] added inactive");
                 }
             }
 
@@ -124,7 +124,7 @@ namespace YouNameIt
                 {
                     text.gameObject.SetActive(false);
 
-                    _log.DevLogInfo("Station " + id + " removed");
+                    _log.DevLog("Station " + id + " removed");
                 }
             }
 

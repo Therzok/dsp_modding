@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <OutputPath>$(SteamGameInstallLocation)BepInEx\plugins\$(Company)-$(AssemblyName)\</OutputPath>
-    <OutDir>$(OutputPath)</OutDir>
+    <OutDir>$(SteamGameInstallLocation)BepInEx\plugins\$(Company)-$(AssemblyName)\</OutDir>
+    <DocumentationFile>$(OutDir)\$(AssemblyName).xml</DocumentationFile>
     
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ResolveBepInExReferences</PrepareForBuildDependsOn>
   </PropertyGroup>
@@ -44,12 +44,13 @@ partial class ThisAssembly
   </Target>
   
   <Target Name="ResolveBepInExReferences"
+          Returns="@(Reference)"
           DependsOnTargets="FindSteamGame">
 
     <PropertyGroup>
       <PluginsPath>$(SteamGameInstallLocation)BepInEx\plugins\</PluginsPath>
-      <OutputPath>$(PluginsPath)\$(Company)-$(AssemblyName)\</OutputPath>
-      <OutDir>$(OutputPath)</OutDir>
+      <OutDir>$(PluginsPath)\$(Company)-$(AssemblyName)\</OutDir>
+      <DocumentationFile>$(OutDir)\$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -122,7 +123,7 @@ partial class ThisAssembly
   </UsingTask>
 
   <Target Name="ResolveBepInExPluginReferences"
-          Returns="@(Reference)"
+          Returns="@(ReferencePath)"
           DependsOnTargets="FindSteamGame"
           Condition=" '@(PluginReference)' != '' ">
 

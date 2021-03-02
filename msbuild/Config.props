@@ -10,6 +10,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <PropertyGroup Label="Dyson Sphere Program">
@@ -19,16 +20,9 @@
   </PropertyGroup>
 
   <PropertyGroup Label="GitInfo Setup">
-    <GitVersionFile>$(MSBuildProjectDirectory)\GitInfo.txt</GitVersionFile>
+    <GitRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..'))</GitRoot>
+    <GitDir>$([System.IO.Path]::Combine('$(GitRoot)', '.git'))</GitDir>
     <GitDefaultBranch>main</GitDefaultBranch>
     <GitInfoReportImportance Condition=" '$(Configuration)' == 'Release' ">High</GitInfoReportImportance>
-
-    <!-- Optimizations -->
-    <GitRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\'))</GitRoot>
-    <GitDir>$([System.IO.Path]::Combine('$(GitRoot)', '.git'))</GitDir>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
-  </ItemGroup>
 </Project>

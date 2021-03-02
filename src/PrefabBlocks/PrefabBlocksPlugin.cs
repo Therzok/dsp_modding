@@ -25,26 +25,22 @@ namespace PrefabBlocks
         {
             // Trigger loading the asset bundle
             PrefabManager.Instance.Preload();
-            Logger.DevLogInfo("Asset bundles loaded");
         }
 
         void OnEnable()
         {
             PrefabManager.Instance.Initialize();
-            Logger.DevLogInfo("Requested prefabs and fixed TextMeshPro");
+            Logger.LogMessage("Prefablocks assets loaded and fixed TextMeshPro");
         }
 
         void OnDisable()
         {
             PrefabManager.Instance.Unload();
-            Logger.DevLogInfo("Soft unloaded and deactivated");
         }
 
         void OnDestroy()
         {
             PrefabManager.Instance.Destroy();
-
-            Logger.DevLogInfo("Destroyed");
         }
     }
 }

@@ -12,6 +12,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 
 using UnityEngine;
+using System.Linq.Expressions;
 
 namespace OrderSaves
 {
@@ -21,26 +22,38 @@ namespace OrderSaves
     [BepInPlugin(ThisAssembly.Plugin.GUID, ThisAssembly.Plugin.Name, ThisAssembly.Plugin.Version)]
     public sealed class OrderSavesPlugin : BaseUnityPlugin
     {
-        readonly FieldInfo _fileInfoAccessor = typeof(UIGameSaveEntry).GetField("fileInfo", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        Func<UIGameSaveEntry, FileInfo> _getFileInfo;
+        Func<UIGameSaveEntry, int> _getIndex;
+
         readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
 
         void Awake()
         {
             _harmony.PatchAllRecursive(typeof(Patches));
 
-            Logger.DevLogInfo("Loaded " + nameof(OrderSavesPlugin));
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
+            ParameterExpression[] parameters = new[] { Expression.Parameter(typeof(UIGameSaveEntry), "entry") };
+
+            _getFileInfo = Expression.Lambda<Func<UIGameSaveEntry, FileInfo>>(
+                Expression.Field(parameters[0], typeof(UIGameSaveEntry).GetField("fileInfo", flags)),
+                parameters).Compile();
+
+            _getIndex = Expression.Lambda<Func<UIGameSaveEntry, int>>(
+                Expression.Field(parameters[0], typeof(UIGameSaveEntry).GetField("index", flags)),
+                parameters).Compile();
         }
 
         void OnEnable()
         {
             Patches.Refreshed += OnListRefreshed;
-            Logger.DevLogInfo("Patches hooked");
+            Logger.DevLog();
         }
 
         void OnDisable()
         {
             Patches.Refreshed -= OnListRefreshed;
-            Logger.DevLogInfo("Patches unhooked");
+            Logger.DevLog();
         }
 
         void OnDestroy()
@@ -50,26 +63,23 @@ namespace OrderSaves
 
         void OnListRefreshed(List<UIGameSaveEntry> entries)
         {
-#if VERBOSE_LOG
-            using (Logger.DevMeasure("SORT", "sorting save entries"))
-            {
-#endif
+            long token = 0;
+
+            Logger.MeasureStart(ref token);
+
             // Sort the save list, descending order.
             entries.Sort((x, y) => y.fileDate.CompareTo(x.fileDate));
 
-                for (int i = 0; i < entries.Count; ++i)
+            for (int i = 0; i < entries.Count; ++i)
+            {
+                UIGameSaveEntry entry = entries[i];
+                if (_getIndex(entry) != i)
                 {
-                    UIGameSaveEntry entry = entries[i];
-                    var fileInfo = (FileInfo)_fileInfoAccessor.GetValue(entry);
-
                     // Trigger update of UI entities
-                    entry.SetEntry(i, fileInfo);
-
-                    Logger.DevLogInfo(string.Format("{0} {1} {2}", i, entry.saveName, fileInfo.LastWriteTime));
+                    entry.SetEntry(i, _getFileInfo(entry));
                 }
-#if VERBOSE_LOG
             }
-#endif
+            Logger.MeasureEnd(token);
         }
 
         static class Patches

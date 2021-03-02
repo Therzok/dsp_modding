@@ -22,52 +22,71 @@ namespace SaveTheWindows
     public sealed class SaveTheWindowsPlugin : BaseUnityPlugin
     {
         readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
-        WindowManager _manager;
+        readonly WindowSerializer _serializer;
+        RectTransform[] _transformsArray = ArrayUtil.Empty<RectTransform>();
+        readonly Dictionary<string, RectTransform> _transforms = new Dictionary<string, RectTransform>(64, StringComparer.Ordinal);
 
-#if DEVELOPMENT
         /// <summary>
-        /// Forces the windowing system to be serialized.
+        /// Initializes a new instance of the plugin.
         /// </summary>
-        public void ForceSerialize()
+        public SaveTheWindowsPlugin()
         {
-            _manager.SaveData(GameSave.LastExit);
+            _serializer = new WindowSerializer(Config);
         }
-#endif
 
         void Awake()
         {
-            var description = new ConfigDescription("Adds indentation to the save file allowing it to be read by humans. Enabling impacts performance.");
-            var humanReadable = Config.Bind(nameof(SaveTheWindows), key: "HumanReadable", defaultValue: false, description);
-
-            _manager = new WindowManager(Path.Combine(GameConfig.gameSaveFolder, nameof(SaveTheWindowsPlugin)), new WindowSerializer(humanReadable));
-
             _harmony.PatchAllRecursive(typeof(Patches));
-
-            Logger.DevLogInfo("Loaded " + nameof(SaveTheWindowsPlugin));
         }
 
         void OnEnable()
         {
-            Patches.GameSaved += _manager.SaveData;
-            Logger.DevLogInfo("Patches hooked");
+            Patches.UIOpened += OpenGameUI;
+            Patches.UIClosed += CloseGameUI;
+
+            Logger.DevLog();
         }
 
-        void Start()
+        const string UISource = "UI Root/Overlay Canvas/In Game/Windows";
+        void OpenGameUI()
         {
-            // HACK: Maybe listen to UIWindowDrag.OnEnable? Maybe just keep a pair of transform/name?
-            var windowRoot = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows");
-            var windows = windowRoot.GetComponentsInChildren<UIWindowDrag>(includeInactive: true);
+            long token = 0;
 
-            // TODO: Whenever they release the UIWindow API, consider fixing this and figuring out how to detect canvas of other plugins
+            Logger.MeasureStart(ref token);
+            // HACK: Maybe listen to UIWindowDrag.OnEnable? Maybe just keep a pair of transform/name?
+            var windowRoot = GameObject.Find(UISource);
+            if (windowRoot == null)
+            {
+                return;
+            }
+
+            UIWindowDrag[] windows = windowRoot.GetComponentsInChildren<UIWindowDrag>(includeInactive: true);
+
+            _transformsArray = Array.ConvertAll(windows, window => window.dragTrans);
+            foreach (UIWindowDrag wnd in windows)
+            {
+                _transforms[wnd.name] = wnd.dragTrans;
+            }
+
+            // TODO: Whenever they release the UIWindow API, consider fixing this
             // _draggableWindows = windowRoot.GetComponentsInChildren<UIWindow>(includeInactive: true);
 
-            _manager.RegisterWindows(nameof(DSPGame), Array.ConvertAll(windows, window => window.dragTrans));
+            WindowManager.Instance.LoadData(_serializer, nameof(DSPGame), _transforms);
+
+            Logger.MeasureEnd(token);
+        }
+
+        void CloseGameUI()
+        {
+            WindowManager.Instance.SaveData(_serializer, nameof(DSPGame), _transformsArray);
         }
 
         void OnDisable()
         {
-            Patches.GameSaved -= _manager.SaveData;
-            Logger.DevLogInfo("Patches unhooked");
+            Patches.UIOpened -= OpenGameUI;
+            Patches.UIClosed -= CloseGameUI;
+
+            Logger.DevLog();
         }
 
         void OnDestroy()
@@ -77,26 +96,21 @@ namespace SaveTheWindows
 
         static class Patches
         {
-            /// <summary>
-            /// Triggered when a game is saved (autosave, last exit or manual)
-            /// </summary>
-            public static Action<string> GameSaved;
+            public static Action UIOpened;
 
-            /// <summary>
-            /// Triggered when a game save is loaded.
-            /// </summary>
-            /// <param name="saveName">The name of the save game.</param>
-            [HarmonyPostfix, HarmonyPatch(typeof(GameSave), nameof(GameSave.SaveCurrentGame))]
-            public static void SaveCurrentGame(string saveName)
+            public static Action UIClosed;
+
+            [HarmonyPostfix, HarmonyPatch(typeof(UIGame), nameof(UIGame.OnGameEnd))]
+            public static void OnGameEnd()
             {
-                GameSaved?.Invoke(saveName);
+                UIClosed?.Invoke();
             }
 
-            //[HarmonyPostfix, HarmonyPatch(typeof(ManualBehaviour), nameof(ManualBehaviour._Destroy))]
-            //public static void Close(ManualBehaviour __instance)
-            //{
-            //    GameLoaded?.Invoke(__instance);
-            //}
+            [HarmonyPostfix, HarmonyPatch(typeof(UIRoot), nameof(UIRoot.OpenGameUI))]
+            public static void OpenGameUI()
+            {
+                UIOpened?.Invoke();
+            }
         }
     }
 }

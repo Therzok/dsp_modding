@@ -28,7 +28,7 @@ namespace HarmonyLib
 
             using (ManualLogSource log = Logger.CreateLogSource("Hrm"))
             {
-                log.DevLogInfo(harmony);
+                log.DevLog(harmony);
             }
         }
 

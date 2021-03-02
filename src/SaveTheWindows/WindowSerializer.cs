@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
 using BepInEx.Configuration;
+using BepInEx.Logging;
 
 using UnityEngine;
 
@@ -14,13 +16,17 @@ namespace SaveTheWindows
 {
     sealed class WindowSerializer : IDisposable
     {
+        readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(WindowManager));
+
         readonly XmlWriterSettings _xmlWriterSettings;
         readonly XmlReaderSettings _xmlReaderSettings;
         readonly ConfigEntry<bool> _humanReadable;
 
-        public WindowSerializer(ConfigEntry<bool> humanReadable)
+        public WindowSerializer(ConfigFile config)
         {
-            _humanReadable = humanReadable;
+            var description = new ConfigDescription("Adds indentation to the save file allowing it to be read by humans. Enabling impacts performance.");
+            _humanReadable = config.Bind(nameof(SaveTheWindows), key: "HumanReadable", defaultValue: false, description);
+
             _humanReadable.SettingChanged += HumanReadableSettingChanged;
 
             _xmlWriterSettings = new XmlWriterSettings {
@@ -30,7 +36,7 @@ namespace SaveTheWindows
 #if VERBOSE_LOG
                 Indent = true,
 #else
-                Indent = humanReadable.Value,
+                Indent = _humanReadable.Value,
 #endif
             };
 
@@ -53,55 +59,54 @@ namespace SaveTheWindows
             _xmlWriterSettings.Indent = _humanReadable.Value;
         }
 
-        internal void LoadData(string saveFileName)
+        internal bool LoadData(string saveFileName, string source, Dictionary<string, RectTransform> windows)
         {
-
-        }
-
-        internal void SaveData(string saveFileName, List<WindowGroup> windowGroups)
-        {
-            // TODO: if autosave, shuffle like devs do
-            // Or maybe just check for closest to timestamp if autosave :)
-
-            using (var writer = XmlWriter.Create(saveFileName, _xmlWriterSettings))
+            using (FileStream fs = File.OpenRead(saveFileName))
+            using (var reader = new BinaryReader(fs))
             {
-                writer.WriteComment("Auto-generated, do not modify, ordering is important for performance");
-
-                writer.WriteStartElement(nameof(SaveTheWindowsPlugin));
-                writer.WriteAttributeString("Version", "1");
-
-                for (int i = 0; i < windowGroups.Count; ++i)
+                int version = reader.ReadInt32(); // Version
+                if (version != 1 || source != reader.ReadString())
                 {
-                    SaveWindowGroup(writer, windowGroups[i]);
+                    _log.LogWarning("Version mismatch, expected '1' got " + source);
+                    return false;
                 }
 
-                writer.WriteEndElement();
+                int count = reader.ReadInt32();
+
+                for (int i = 0; i < count; ++i)
+                {
+                    string name = reader.ReadString();
+                    float x = reader.ReadSingle();
+                    float y = reader.ReadSingle();
+
+                    if (windows.TryGetValue(name, out RectTransform window))
+                    {
+                        window.anchoredPosition.Set(x, y);
+                    }
+                }
             }
+
+            return true;
         }
 
-        static void SaveWindowGroup(XmlWriter writer, WindowGroup group)
+        internal void SaveData(string saveFileName, string source, RectTransform[] windows)
         {
-            writer.WriteStartElement(group.Source);
-
-            var transforms = group.Transforms;
-            int length = transforms.Length;
-            writer.WriteAttributeString("length", length);
-
-            for (int i = 0; i < transforms.Length; ++i)
+            using (FileStream fs = File.OpenWrite(saveFileName))
+            using (var writer = new BinaryWriter(fs))
             {
-                var transform = transforms[i];
-                Vector2 anchor = transform.anchoredPosition;
+                writer.Write(1); // Version
+                writer.Write(source);
 
-                writer.WriteStartElement("win");
-
-                writer.WriteAttributeString("name", transform.name);
-                writer.WriteAttributeString("x", anchor.x);
-                writer.WriteAttributeString("y", anchor.y);
-
-                writer.WriteEndElement();
+                writer.Write(windows.Length);
+                for (int i = 0; i < windows.Length; ++i)
+                {
+                    RectTransform transform = windows[i];
+                    Vector2 anchor = transform.anchoredPosition;
+                    writer.Write(transform.name);
+                    writer.Write(anchor.x);
+                    writer.Write(anchor.y);
+                }
             }
-
-            writer.WriteEndElement();
         }
     }
 }

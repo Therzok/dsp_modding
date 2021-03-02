@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup Label="BepInExReferences">
-    <PackageReference Include="BepInEx.Analyzers" Version="1.0.4" />
+    <PackageReference Include="BepInEx.Analyzers" Version="1.0.4" PrivateAssets="all" />
     
     <BIEReference Include="0Harmony.dll" />
 

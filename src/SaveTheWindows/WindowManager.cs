@@ -14,63 +14,55 @@ using UnityEngine;
 
 namespace SaveTheWindows
 {
+    /// <summary>
+    /// The class to use to register 
+    /// </summary>
     public sealed partial class WindowManager
     {
+        /// <summary>
+        /// The instance of the WindowManager to use.
+        /// </summary>
+        public static readonly WindowManager Instance = new WindowManager(Path.Combine(GameConfig.gameSaveFolder, nameof(SaveTheWindowsPlugin)));
+
         readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(WindowManager));
         readonly string _saveDirectory;
-        readonly WindowSerializer _serializer;
 
         readonly List<WindowGroup> _registrations = new List<WindowGroup>(64);
 
-        internal WindowManager(string saveDirectory, WindowSerializer serializer)
+        internal WindowManager(string saveDirectory)
         {
             _saveDirectory = saveDirectory;
-            _serializer = serializer;
         }
 
-        internal IDisposable RegisterWindows(string pluginName, RectTransform[] draggableWindows)
+        internal WindowGroup RegisterWindows(string pluginName, RectTransform[] draggableWindows)
         {
-            // TODO: Public
             // TODO: We have no way to know when a new window is added or when a window is renamed.
 
             // Sort the windows for easier reading 
             Array.Sort(draggableWindows, (x, y) => StringComparer.Ordinal.Compare(x.name, y.name));
-            _log.DevLog(draggableWindows, x => x.name != null ? x.name : "no name", "UIWindows");
+            _log.DevLog(draggableWindows, x => x.name, "UIWindows");
 
-            return new WindowGroup(pluginName, draggableWindows, _registrations);
+           return new WindowGroup(pluginName, draggableWindows, _registrations);
         }
 
-        internal void UnregisterWindow(string pluginName, string windowName)
+        internal bool LoadData(WindowSerializer serializer, string source, Dictionary<string, RectTransform> transforms)
         {
-            // TODO: Public
-        }
-
-        internal void UnregisterWindows(string pluginName)
-        {
-            // TODO: Public
-        }
-
-        internal void LoadData(string gameName)
-        {
-            if (string.IsNullOrEmpty(gameName))
-            {
-                return;
-            }
-
-            string saveFileName = Path.Combine(_saveDirectory, gameName = ".xml");
+            string saveFileName = Path.Combine(_saveDirectory, "ui.xml");
             if (File.Exists(saveFileName))
             {
-                _serializer.LoadData(saveFileName);
+                return serializer.LoadData(saveFileName, source, transforms);
             }
+
+            return false;
         }
 
-        internal void SaveData(string gameName)
+        internal void SaveData(WindowSerializer serializer, string source, RectTransform[] transforms)
         {
             Directory.CreateDirectory(_saveDirectory);
 
-            string saveFileName = Path.Combine(_saveDirectory, gameName + ".xml");
+            string saveFileName = Path.Combine(_saveDirectory, "ui.xml");
 
-            _serializer.SaveData(saveFileName, _registrations);
+            serializer.SaveData(saveFileName, source, transforms);
         }
 
         // UI Root/Overlay Canvas/In Game/Windows
