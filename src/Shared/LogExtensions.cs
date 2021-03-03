@@ -69,6 +69,11 @@ namespace BepInEx.Logging
         }
 
         [Conditional("VERBOSE_LOG")]
+        public static void DevMeasureStart(this ManualLogSource log, ref long token, [CallerMemberName] string ctx = null)
+        {
+            MeasureStart(log, ref token, ctx);
+        }
+
         public static void MeasureStart(this ManualLogSource log, ref long token, [CallerMemberName] string ctx = null)
         {
             token = Stopwatch.GetTimestamp();
@@ -76,6 +81,11 @@ namespace BepInEx.Logging
         }
 
         [Conditional("VERBOSE_LOG")]
+        public static void DevMeasureEnd(this ManualLogSource log, long token, [CallerMemberName] string ctx = null)
+        {
+            MeasureEnd(log, token, ctx);
+        }
+
         public static void MeasureEnd(this ManualLogSource log, long token, [CallerMemberName] string ctx = null)
         {
             long elapsed = Stopwatch.GetTimestamp() - token;

@@ -31,7 +31,7 @@ namespace SaveTheWindows
         /// </summary>
         public SaveTheWindowsPlugin()
         {
-            _serializer = new WindowSerializer(Config);
+            _serializer = new WindowSerializer(Config, Logger);
         }
 
         void Awake()
@@ -47,13 +47,15 @@ namespace SaveTheWindows
             Logger.DevLog();
         }
 
-        const string UISource = "UI Root/Overlay Canvas/In Game/Windows";
         void OpenGameUI()
         {
+            // Unhandled classes:
+            // UIWindow where canDrag = true
+            const string UISource = "UI Root/Overlay Canvas/In Game/Windows";
             long token = 0;
 
-            Logger.MeasureStart(ref token);
-            // HACK: Maybe listen to UIWindowDrag.OnEnable? Maybe just keep a pair of transform/name?
+            Logger.DevMeasureStart(ref token);
+
             var windowRoot = GameObject.Find(UISource);
             if (windowRoot == null)
             {
@@ -63,22 +65,23 @@ namespace SaveTheWindows
             UIWindowDrag[] windows = windowRoot.GetComponentsInChildren<UIWindowDrag>(includeInactive: true);
 
             _transformsArray = Array.ConvertAll(windows, window => window.dragTrans);
+            Array.Sort(_transformsArray, (x, y) => StringComparer.Ordinal.Compare(x, y));
+            
             foreach (UIWindowDrag wnd in windows)
             {
                 _transforms[wnd.name] = wnd.dragTrans;
             }
 
-            // TODO: Whenever they release the UIWindow API, consider fixing this
-            // _draggableWindows = windowRoot.GetComponentsInChildren<UIWindow>(includeInactive: true);
-
             WindowManager.Instance.LoadData(_serializer, nameof(DSPGame), _transforms);
 
-            Logger.MeasureEnd(token);
+            Logger.DevMeasureEnd(token);
         }
 
         void CloseGameUI()
         {
             WindowManager.Instance.SaveData(_serializer, nameof(DSPGame), _transformsArray);
+            _transformsArray = ArrayUtil.Empty<RectTransform>();
+            _transforms.Clear();
         }
 
         void OnDisable()
@@ -91,13 +94,13 @@ namespace SaveTheWindows
 
         void OnDestroy()
         {
+            _serializer.Dispose();
             _harmony.UnpatchSelf();
         }
 
         static class Patches
         {
             public static Action UIOpened;
-
             public static Action UIClosed;
 
             [HarmonyPostfix, HarmonyPatch(typeof(UIGame), nameof(UIGame.OnGameEnd))]

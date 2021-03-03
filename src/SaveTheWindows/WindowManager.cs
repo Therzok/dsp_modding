@@ -26,31 +26,26 @@ namespace SaveTheWindows
 
         readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(WindowManager));
         readonly string _saveDirectory;
+        readonly string _saveFile;
 
-        readonly List<WindowGroup> _registrations = new List<WindowGroup>(64);
-
-        internal WindowManager(string saveDirectory)
+        WindowManager(string saveDirectory)
         {
             _saveDirectory = saveDirectory;
-        }
-
-        internal WindowGroup RegisterWindows(string pluginName, RectTransform[] draggableWindows)
-        {
-            // TODO: We have no way to know when a new window is added or when a window is renamed.
-
-            // Sort the windows for easier reading 
-            Array.Sort(draggableWindows, (x, y) => StringComparer.Ordinal.Compare(x.name, y.name));
-            _log.DevLog(draggableWindows, x => x.name, "UIWindows");
-
-           return new WindowGroup(pluginName, draggableWindows, _registrations);
+            _saveFile = Path.Combine(_saveDirectory, "ui.xml");
         }
 
         internal bool LoadData(WindowSerializer serializer, string source, Dictionary<string, RectTransform> transforms)
         {
-            string saveFileName = Path.Combine(_saveDirectory, "ui.xml");
-            if (File.Exists(saveFileName))
+            try
             {
-                return serializer.LoadData(saveFileName, source, transforms);
+                if (File.Exists(_saveFile))
+                {
+                    return serializer.LoadData(_saveFile, source, transforms);
+                }
+            }
+            catch (Exception e)
+            {
+                _log.LogError("Failed to load UI data: " + e.ToString());
             }
 
             return false;
@@ -58,19 +53,16 @@ namespace SaveTheWindows
 
         internal void SaveData(WindowSerializer serializer, string source, RectTransform[] transforms)
         {
-            Directory.CreateDirectory(_saveDirectory);
+            try
+            {
+                Directory.CreateDirectory(_saveDirectory);
 
-            string saveFileName = Path.Combine(_saveDirectory, "ui.xml");
-
-            serializer.SaveData(saveFileName, source, transforms);
+                serializer.SaveData(_saveFile, source, transforms);
+            }
+            catch (Exception e)
+            {
+                _log.LogError("Failed to save UI data: " + e.ToString());
+            }
         }
-
-        // UI Root/Overlay Canvas/In Game/Windows
-
-        // Unhandled classes:
-        // UIWindow where canDrag = true
-        //
     }
-
-
 }

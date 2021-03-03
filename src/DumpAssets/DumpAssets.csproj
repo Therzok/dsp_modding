@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Dump Game Assets</AssemblyTitle>
+    <Description>Digs through the game scene for prefabs</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
+    <Thunderstore Include="README.md" />
+  </ItemGroup>
+
+</Project>

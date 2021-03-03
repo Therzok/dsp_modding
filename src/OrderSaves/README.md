@@ -14,6 +14,10 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 
 ## Changelog
 
+### v1.0.0
+
+* Performance improvements.
+
 ### v0.9.0
 
 * Initial release of the mod.

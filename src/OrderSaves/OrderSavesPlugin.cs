@@ -65,7 +65,7 @@ namespace OrderSaves
         {
             long token = 0;
 
-            Logger.MeasureStart(ref token);
+            Logger.DevMeasureStart(ref token);
 
             // Sort the save list, descending order.
             entries.Sort((x, y) => y.fileDate.CompareTo(x.fileDate));
@@ -79,7 +79,7 @@ namespace OrderSaves
                     entry.SetEntry(i, _getFileInfo(entry));
                 }
             }
-            Logger.MeasureEnd(token);
+            Logger.DevMeasureEnd(token);
         }
 
         static class Patches

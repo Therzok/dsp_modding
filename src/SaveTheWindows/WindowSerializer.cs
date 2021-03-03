@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml;
-using System.Xml.Serialization;
 
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -16,14 +14,16 @@ namespace SaveTheWindows
 {
     sealed class WindowSerializer : IDisposable
     {
-        readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(WindowManager));
+        readonly ManualLogSource _log;
 
         readonly XmlWriterSettings _xmlWriterSettings;
         readonly XmlReaderSettings _xmlReaderSettings;
         readonly ConfigEntry<bool> _humanReadable;
 
-        public WindowSerializer(ConfigFile config)
+        public WindowSerializer(ConfigFile config, ManualLogSource log)
         {
+            _log = log;
+
             var description = new ConfigDescription("Adds indentation to the save file allowing it to be read by humans. Enabling impacts performance.");
             _humanReadable = config.Bind(nameof(SaveTheWindows), key: "HumanReadable", defaultValue: false, description);
 
@@ -33,11 +33,7 @@ namespace SaveTheWindows
                 CheckCharacters = false,
                 CloseOutput = true,
                 Encoding = Encoding.ASCII,
-#if VERBOSE_LOG
-                Indent = true,
-#else
                 Indent = _humanReadable.Value,
-#endif
             };
 
             _xmlReaderSettings = new XmlReaderSettings {
@@ -61,8 +57,7 @@ namespace SaveTheWindows
 
         internal bool LoadData(string saveFileName, string source, Dictionary<string, RectTransform> windows)
         {
-            using (FileStream fs = File.OpenRead(saveFileName))
-            using (var reader = new BinaryReader(fs))
+            using (var reader = new BinaryReader(File.OpenRead(saveFileName)))
             {
                 int version = reader.ReadInt32(); // Version
                 if (version != 1 || source != reader.ReadString())
@@ -91,8 +86,7 @@ namespace SaveTheWindows
 
         internal void SaveData(string saveFileName, string source, RectTransform[] windows)
         {
-            using (FileStream fs = File.OpenWrite(saveFileName))
-            using (var writer = new BinaryWriter(fs))
+            using (var writer = new BinaryWriter(File.OpenWrite(saveFileName)))
             {
                 writer.Write(1); // Version
                 writer.Write(source);
@@ -100,7 +94,7 @@ namespace SaveTheWindows
                 writer.Write(windows.Length);
                 for (int i = 0; i < windows.Length; ++i)
                 {
-                    RectTransform transform = windows[i];
+                    ref RectTransform transform = ref windows[i];
                     Vector2 anchor = transform.anchoredPosition;
                     writer.Write(transform.name);
                     writer.Write(anchor.x);
