@@ -78,7 +78,7 @@
   <Target Name="GeneratePublishingZip"
           DependsOnTargets="GenerateManifestJson"
           AfterTargets="AfterBuild"
-          Inputs="@(Thunderstore)"
+          Inputs="@(Thunderstore);$(OutDir)**\*"
           Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip"
           Condition=" '$(Configuration)' == 'Release' ">
 
@@ -107,14 +107,26 @@
       <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
     </Copy>
 
-    <MakeDir Directories="$(PackageOutputPath)" />
+    <ItemGroup>
+      <OutputItems Include="$(OutDir)\**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(OutputItems)"
+          DestinationFolder="$(PackageDir)"
+          SkipUnchangedFiles="true"
+          Retries="5"
+          RetryDelayMilliseconds="200">
+      <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
+    </Copy>
+    
+    <MakeDir Directories="$(PackageDir)" />
     
     <ZipDirectory DestinationFile="$(PackageZip)"
                   SourceDirectory="$(PackageDir)"
                   Overwrite="true" />
 
     <ItemGroup>
-      <FileWrites Include="@(CopiedFiles);$(PackageZip)" />
+      <FileWrites Include="@(ToClean);$(PackageZip)" />
     </ItemGroup>
   </Target>
 </Project>
