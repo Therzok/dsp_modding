@@ -22,6 +22,11 @@ namespace DumpAssets
     [BepInPlugin(ThisAssembly.Plugin.GUID, ThisAssembly.Plugin.Name, ThisAssembly.Plugin.Version)]
     public sealed class DumpAssetsPlugin : BaseUnityPlugin
     {
+        const string VersionFile = "VERSION";
+        const string ReadmeFile = "README.md";
+        const string AssetsDirectory = "assets";
+        const string DBVersion = "1";
+
         readonly Counters _counters = new Counters();
         readonly ConfigEntry<string> _outputPath;
 
@@ -39,7 +44,13 @@ namespace DumpAssets
         {
             try
             {
-                string destinationDir = Initialize();
+                string destinationDir = Initialize(out bool skip);
+
+                if (skip)
+                {
+                    Logger.LogInfo("Data is up-to-date, skipping...");
+                    return;
+                }
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 Logger.LogInfo("Processing prefabs, game might freeze...");
@@ -51,6 +62,8 @@ namespace DumpAssets
 
                 sw.Stop();
 
+                string[] contents = new[] { DBVersion, GameConfig.gameVersion.ToString() };
+                File.WriteAllLines(Path.Combine(destinationDir, "VERSION"), contents);
                 Logger.LogInfo("Finished dumping in " + sw.Elapsed.ToString());
                 Logger.LogInfo(_counters.GameObject.ToString() + " gameobjects");
                 Logger.LogInfo(_counters.Component.ToString() + " components");
@@ -63,7 +76,7 @@ namespace DumpAssets
             }
         }
 
-        string Initialize()
+        string Initialize(out bool skip)
         {
             string destinationDir = _outputPath.Value;
             if (!Path.IsPathRooted(destinationDir))
@@ -73,10 +86,25 @@ namespace DumpAssets
             // Resolve relative dirs.
             destinationDir = Path.GetFullPath(destinationDir);
 
-            string helpFile = Path.Combine(destinationDir, "README.md");
+            string versionFile = Path.Combine(destinationDir, VersionFile);
+            string helpFile = Path.Combine(destinationDir, ReadmeFile);
 
-            destinationDir = Path.Combine(destinationDir, "assets");
+            destinationDir = Path.Combine(destinationDir, AssetsDirectory);
             Directory.CreateDirectory(destinationDir);
+
+            skip = false;
+            try
+            {
+                string content = File.ReadAllText(versionFile);
+                string[] parts = content.Split(new[] { '\n' });
+                if (parts.Length == 2 && parts[0] == DBVersion && parts[1] == GameConfig.gameVersion.ToString())
+                {
+                    skip = true;
+                }
+            }
+            catch
+            {
+            }
 
             File.WriteAllText(helpFile, @"Generated via DumpAssetsPlugin from https://github.com/Therzok/dsp_modding");
 

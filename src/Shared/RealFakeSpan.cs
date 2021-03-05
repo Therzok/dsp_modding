@@ -17,7 +17,7 @@ namespace System
         {
             _original = original;
             _start = start;
-            _end = length;
+            _end = start + length;
         }
 
         public RealFakeSpan Slice(int start)
@@ -27,7 +27,7 @@ namespace System
                 throw new ArgumentOutOfRangeException(nameof(start));
             }
 
-            return new RealFakeSpan(_original, _start + start, _end);
+            return new RealFakeSpan(_original, _start + start, Length - start);
         }
 
         public RealFakeSpan Slice(int start, int length)
@@ -42,7 +42,7 @@ namespace System
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new RealFakeSpan(_original, _start + start, _start + start + length);
+            return new RealFakeSpan(_original, _start + start, length);
         }
 
         public int IndexOfAny(char[] anyOf)

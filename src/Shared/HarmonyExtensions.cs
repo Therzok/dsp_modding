@@ -26,7 +26,7 @@ namespace HarmonyLib
         {
             harmony.PatchAllRecursiveInternal(type);
 
-            using (ManualLogSource log = Logger.CreateLogSource("Hrm"))
+            using (ManualLogSource log = Logger.CreateLogSource(nameof(HarmonyExtensions)))
             {
                 log.DevLog(harmony);
             }
