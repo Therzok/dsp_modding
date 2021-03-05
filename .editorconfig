@@ -131,3 +131,6 @@ dotnet_naming_style.prefix_underscore.required_prefix = _
 
 # Default severity for analyzer diagnostics with category 'DocumentationHeader'
 dotnet_analyzer_diagnostic.category-DocumentationHeader.severity = silent
+
+# HAA0502: Explicit new reference type allocation
+dotnet_diagnostic.HAA0502.severity = silent

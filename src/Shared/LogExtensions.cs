@@ -26,7 +26,7 @@ namespace BepInEx.Logging
         public static void DevLog<T>(this ManualLogSource log, T[] array, Func<T, string> transform, [CallerMemberName] string message = null)
         {
             log.LogInfo(message);
-            log.LogInfo(typeof(T).FullName + "[" + array.Length + "]:");
+            log.LogInfo(typeof(T).FullName + "[" + array.Length.ToString() + "]:");
             for (int i = 0; i < array.Length; ++i)
             {
                 log.LogInfo("  " + transform(array[i]));
@@ -64,7 +64,7 @@ namespace BepInEx.Logging
                 Patch patch = patches[i];
 
                 log.DevLog(patch.GetMethod(original).FullDescription());
-                log.DevLog(string.Format("[{0}] {1} {2}", patch.owner, patch.index, patch.priority));
+                log.DevLog(string.Format("[{0}] {1} {2}", patch.owner, patch.index.ToString(), patch.priority.ToString()));
             }
         }
 

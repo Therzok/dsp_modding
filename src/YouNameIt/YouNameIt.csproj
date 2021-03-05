@@ -6,9 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Update="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" NoWarn="CS1574" />
+
     <ProjectReference Include="..\PrefabBlocks\PrefabBlocks.csproj" ReferenceOutputAssembly="false" />
-    <PluginReference Include="PrefabBlocks" Author="Therzok" Assembly="PrefabBlocks.dll" PreferredVersion="0.1.0"/>
+    <PluginReference Include="PrefabBlocks" Author="Therzok" Assembly="PrefabBlocks.dll" PreferredVersion="0.1.0" />
 
     <Thunderstore Include="README.md" />
   </ItemGroup>
 </Project>
+

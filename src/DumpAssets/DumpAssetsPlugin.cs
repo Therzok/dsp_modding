@@ -22,16 +22,15 @@ namespace DumpAssets
     [BepInPlugin(ThisAssembly.Plugin.GUID, ThisAssembly.Plugin.Name, ThisAssembly.Plugin.Version)]
     public sealed class DumpAssetsPlugin : BaseUnityPlugin
     {
+        readonly Counters _counters = new Counters();
         readonly ConfigEntry<string> _outputPath;
-        int _goCount = 0;
-        int _componentCount = 0;
 
         /// <summary>
         /// Creates a new plugin instance, called by mod loader.
         /// </summary>
         public DumpAssetsPlugin()
         {
-            _outputPath = Config.Bind("DumpAssets", "Location", ".\\",
+            _outputPath = Config.Bind("DumpAssets", "Location", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 new ConfigDescription("The path to create the asset folder dump in, should be a path on disk like " + 
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
         }
@@ -52,7 +51,11 @@ namespace DumpAssets
 
                 sw.Stop();
 
-                Logger.LogInfo(string.Format("Wrote {0} gameobjects {1} components in {2}", _goCount, _componentCount, sw.Elapsed));
+                Logger.LogInfo("Finished dumping in " + sw.Elapsed.ToString());
+                Logger.LogInfo(_counters.GameObject.ToString() + " gameobjects");
+                Logger.LogInfo(_counters.Component.ToString() + " components");
+                Logger.LogInfo(_counters.Field.ToString() + " fields");
+                Logger.LogInfo(_counters.Property.ToString() + " properties");
             }
             catch (Exception e)
             {
@@ -80,11 +83,6 @@ namespace DumpAssets
             return destinationDir;
         }
 
-        void ProcessGameObject(string resourcePath, string outputPath, GameObject go)
-        {
-            ProcessGameObjectInternal(resourcePath, outputPath, go);
-        }
-
         readonly char[] _invalidChars = Path.GetInvalidFileNameChars();
         string Sanitize(string name)
         {
@@ -99,14 +97,14 @@ namespace DumpAssets
             return name;
         }
 
-        void ProcessGameObjectInternal(string resourcePath, string outputPath, GameObject go)
+        void ProcessGameObject(string resourcePath, string outputPath, GameObject go)
         {
             if (!_visited.Add(go))
             {
                 return;
             }
 
-            _goCount++;
+            _counters.GameObject++;
 
             string sanitized = Sanitize(go.name);
             string outputBase = Path.Combine(outputPath, sanitized);
@@ -177,6 +175,7 @@ namespace DumpAssets
         struct ReflectionInfo
         {
             public FieldInfo[] Fields;
+            public PropertyInfo[] Properties;
         }
 
         void ProcessComponent(StreamWriter writer, Component value)
@@ -186,13 +185,18 @@ namespace DumpAssets
                 return;
             }
 
-            _componentCount++;
+            _counters.Component++;
 
             Type type = value.GetType();
             if (!_cachedFields.TryGetValue(type, out ReflectionInfo info))
             {
                 info = new ReflectionInfo {
                     Fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance),
+                    Properties = value is Transform
+                        ? type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                              .Where(x => x.CanRead && x.PropertyType.IsValueType && x.GetIndexParameters().Length == 0)
+                              .ToArray()
+                        : ArrayUtil.Empty<PropertyInfo>(),
                 };
 
                 _cachedFields[type] = info;
@@ -202,18 +206,22 @@ namespace DumpAssets
 
             foreach (FieldInfo field in info.Fields)
             {
+                _counters.Field++;
+
                 writer.WriteField(field);
 
                 object fieldValue = field.GetValue(value);
                 ProcessValue(writer, fieldValue);
             }
 
-            if (value is Transform transform)
+            foreach (PropertyInfo prop in info.Properties)
             {
-                if (value is RectTransform rect)
-                {
+                _counters.Property++;
 
-                }
+                writer.WriteProperty(prop);
+
+                object propValue = prop.GetValue(value, null);
+                ProcessValue(writer, propValue);
             }
         }
 
@@ -251,33 +259,15 @@ namespace DumpAssets
             {
                 writer.WriteValue(value);
             }
-
         }
 
-        sealed class TypeEqualityComparer : IEqualityComparer<Type>
+        sealed class Counters
         {
-            public bool Equals(Type x, Type y)
-            {
-                return x == y;
-            }
-
-            public int GetHashCode(Type obj)
-            {
-                return obj == null ? 0 : obj.GetHashCode();
-            }
+            public int GameObject;
+            public int Component;
+            public int Field;
+            public int Property;
         }
-
-        //void OnEnable()
-        //{
-        //}
-
-        //void OnDisable()
-        //{
-        //}
-
-        //void OnDestroy()
-        //{
-        //}
     }
 
     static class StreamWriterExtensions
@@ -288,17 +278,11 @@ namespace DumpAssets
             writer.WriteLine(objectValue == null ? "null" : objectValue);
         }
 
-        public static void WriteProperty(this StreamWriter writer, PropertyInfo property)
+        public static void WriteProperty(this StreamWriter writer, PropertyInfo propertyInfo)
         {
-            //writer.Write(property.IsPublic ? "public " : "private ");
-            //if (property.)
-            //{
-            //    writer.Write("static ");
-            //}
-
-            writer.Write(property.PropertyType.FullName);
+            writer.Write(propertyInfo.PropertyType.FullName);
             writer.Write(' ');
-            writer.Write(property.Name);
+            writer.Write(propertyInfo.Name);
             writer.Write(" => ");
         }
 
@@ -359,6 +343,19 @@ namespace DumpAssets
             writer.Write("## ");
             writer.WriteLine(text);
             writer.WriteLine();
+        }
+    }
+
+    sealed class TypeEqualityComparer : IEqualityComparer<Type>
+    {
+        public bool Equals(Type x, Type y)
+        {
+            return x == y;
+        }
+
+        public int GetHashCode(Type obj)
+        {
+            return obj == null ? 0 : obj.GetHashCode();
         }
     }
 }

@@ -11,6 +11,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <GeneratePerformanceSensitiveAttribute>false</GeneratePerformanceSensitiveAttribute>
   </PropertyGroup>
 
   <PropertyGroup Label="Dyson Sphere Program">
@@ -25,8 +26,4 @@
     <GitDefaultBranch>main</GitDefaultBranch>
     <GitInfoReportImportance Condition=" '$(Configuration)' == 'Release' ">High</GitInfoReportImportance>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" Version="3.3.1" PrivateAssets="all" />
-  </ItemGroup>
 </Project>
