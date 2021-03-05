@@ -2,7 +2,7 @@
 
 A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod which improves the workflow of reporting errors in mods.
 
-![File](https://github.com/Therzok/dsp_modding/blob/ad980fedc568f67b35ef91aa69697f1b242dc3e4/src/WhatTheBreak/images/file.png)
+![File](https://raw.githubusercontent.com/Therzok/dsp_modding/54e198691f8b55258ba4f864dd924bd5fca3f242/src/WhatTheBreak/images/file.png)
 
 The button will copy a nice error summary for the mod developers, giving them a bit more info about what's probably causing it (except a game update).
 
