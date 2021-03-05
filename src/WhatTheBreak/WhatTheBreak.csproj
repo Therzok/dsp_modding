@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>What The Break</AssemblyTitle>
+    <Description>Shows you which plugin is causing you the issues on screen.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
+
+    <Thunderstore Include="README.md" />
+  </ItemGroup>
+</Project>

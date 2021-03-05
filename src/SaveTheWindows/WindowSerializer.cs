@@ -94,7 +94,7 @@ namespace SaveTheWindows
                 writer.Write(windows.Length);
                 for (int i = 0; i < windows.Length; ++i)
                 {
-                    ref RectTransform transform = ref windows[i];
+                    RectTransform transform = windows[i];
                     Vector2 anchor = transform.anchoredPosition;
                     writer.Write(transform.name);
                     writer.Write(anchor.x);

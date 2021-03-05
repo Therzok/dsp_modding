@@ -22,7 +22,7 @@ namespace SaveTheWindows
         /// <summary>
         /// The instance of the WindowManager to use.
         /// </summary>
-        public static readonly WindowManager Instance = new WindowManager(Path.Combine(GameConfig.gameSaveFolder, nameof(SaveTheWindowsPlugin)));
+        public static readonly WindowManager Instance = new WindowManager(Path.Combine(GameConfig.gameDocumentFolder, nameof(SaveTheWindowsPlugin)));
 
         readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(WindowManager));
         readonly string _saveDirectory;
@@ -31,7 +31,7 @@ namespace SaveTheWindows
         WindowManager(string saveDirectory)
         {
             _saveDirectory = saveDirectory;
-            _saveFile = Path.Combine(_saveDirectory, "ui.xml");
+            _saveFile = Path.Combine(_saveDirectory, "ui.dat");
         }
 
         internal bool LoadData(WindowSerializer serializer, string source, Dictionary<string, RectTransform> transforms)

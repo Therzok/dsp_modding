@@ -46,6 +46,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6B952F3E-7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DumpAssets", "DumpAssets\DumpAssets.csproj", "{1A330D48-AD85-429E-A231-40EB5B161922}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WhatTheBreak", "WhatTheBreak\WhatTheBreak.csproj", "{0A1528C1-5FF9-4C1C-B2AC-4E9ECA1FD344}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{63917DB5-2F85-4621-84EA-8CB9EEB4298D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +76,14 @@ Global
 		{1A330D48-AD85-429E-A231-40EB5B161922}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A330D48-AD85-429E-A231-40EB5B161922}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A330D48-AD85-429E-A231-40EB5B161922}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A1528C1-5FF9-4C1C-B2AC-4E9ECA1FD344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A1528C1-5FF9-4C1C-B2AC-4E9ECA1FD344}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A1528C1-5FF9-4C1C-B2AC-4E9ECA1FD344}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A1528C1-5FF9-4C1C-B2AC-4E9ECA1FD344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63917DB5-2F85-4621-84EA-8CB9EEB4298D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63917DB5-2F85-4621-84EA-8CB9EEB4298D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63917DB5-2F85-4621-84EA-8CB9EEB4298D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63917DB5-2F85-4621-84EA-8CB9EEB4298D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

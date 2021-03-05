@@ -2,9 +2,7 @@
 
 A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod library that does not do anything by itself.
 
-It contains assets that can be used by developers to start prototyping new ingame functionality.
-
-Contains simple assets like 3d textmeshpro text, ui textmesh pro text and a plane. They are surfaced via 
+It generates the game assets in a navigatable markdown format.
 
 ## Installing
 

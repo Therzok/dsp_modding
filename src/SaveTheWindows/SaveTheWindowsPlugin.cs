@@ -65,7 +65,7 @@ namespace SaveTheWindows
             UIWindowDrag[] windows = windowRoot.GetComponentsInChildren<UIWindowDrag>(includeInactive: true);
 
             _transformsArray = Array.ConvertAll(windows, window => window.dragTrans);
-            Array.Sort(_transformsArray, (x, y) => StringComparer.Ordinal.Compare(x, y));
+            Array.Sort(_transformsArray, (x, y) => StringComparer.Ordinal.Compare(x.name, y.name));
             
             foreach (UIWindowDrag wnd in windows)
             {
