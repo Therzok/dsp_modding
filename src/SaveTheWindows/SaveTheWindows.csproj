@@ -1,12 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyTitle>Save the Windows</AssemblyTitle>
+    <AssemblyTitle>Save the Windows' position</AssemblyTitle>
     <Description>Saves the window positions so they're restored on the next game start.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
-    <PackageReference Update="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" NoWarn="CS1574" />
 
     <Thunderstore Include="README.md" />
   </ItemGroup>

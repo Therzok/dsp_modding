@@ -1,6 +1,6 @@
-﻿# What The Break 🔍 mod
+﻿# What The Break mod
 
-A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod which improves the workflow of reporting errors in mods.
+A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod which improves the workflow of reporting errors 🔍 in mods.
 
 ![File](https://raw.githubusercontent.com/Therzok/dsp_modding/54e198691f8b55258ba4f864dd924bd5fca3f242/src/WhatTheBreak/images/file.png)
 

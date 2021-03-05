@@ -72,7 +72,7 @@ namespace DumpAssets
                 Logger.LogInfo("Version " + DBVersion);
                 Logger.LogInfo(contents[1]);
 
-                File.WriteAllLines(Path.Combine(destinationDir, VersionFile), contents);
+                File.WriteAllLines(versionFile, contents);
             }
             catch (Exception e)
             {
