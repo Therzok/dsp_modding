@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyTitle>What The Break</AssemblyTitle>
-    <Description>Shows you which plugin is causing you the issues on screen.</Description>
+    <AssemblyTitle>What The Break - Error and Exception helper</AssemblyTitle>
+    <Description>Allows you to easily copy diagnostic information about mods and report to developers.</Description>
   </PropertyGroup>
 
   <ItemGroup>

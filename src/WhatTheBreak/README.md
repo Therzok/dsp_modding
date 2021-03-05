@@ -1,8 +1,30 @@
-﻿# What The Break 💔 mod
+﻿# What The Break 🔍 mod
 
 A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod which fixes a quality of life issue with the error window, by giving you information about which plugins possibly broke it.
 
-It looks for whatever the current methods
+![File](images/file.png)
+
+The button will copy a nice error summary to give to the developer:
+
+```
+Exception hit 1 times: System.Exception: Exception of type 'System.Exception' was thrown.
+
+
+at OrderSaves.OrderSavesPlugin.OnListRefreshed (System.Collections.Generic.List`1<UIGameSaveEntry>) <0x00031>
+at OrderSaves.OrderSavesPlugin/Patches.RefreshList (System.Collections.Generic.List`1<UIGameSaveEntry>) <0x00037>
+at (wrapper dynamic-method) UILoadGameWindow.DMD<UILoadGameWindow..RefreshList> (UILoadGameWindow) <0x0033b>
+at UILoadGameWindow._OnOpen () <0x0001c>
+at ManualBehaviour._Open () <0x000b5>
+
+Target methods matching by name:
+System.Void UILoadGameWindow::RefreshList()
+
+Relevant plugins:
+0. org.Therzok.dsp.OrderSaves1.0.2.2
+    Prefix[index=0]: static System.Void OrderSaves.Patches::RefreshList(System.Collections.Generic.List`1<UIGameSaveEntry> ___entries)
+
+==================
+```
 
 ## Installing
 

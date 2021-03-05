@@ -63,8 +63,6 @@ namespace OrderSaves
 
         void OnListRefreshed(List<UIGameSaveEntry> entries)
         {
-            throw new Exception();
-
             long token = 0;
 
             Logger.DevMeasureStart(ref token);
@@ -95,13 +93,6 @@ namespace OrderSaves
             public static void RefreshList(List<UIGameSaveEntry> ___entries)
             {
                 Refreshed?.Invoke(___entries);
-            }
-
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(UniverseSimulator), nameof(UniverseSimulator.OnGameBegin))]
-            public static void OnGameBegin()
-            {
-                throw new Exception();
             }
         }
     }

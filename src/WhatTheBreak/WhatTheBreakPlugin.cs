@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 
 using BepInEx;
 using BepInEx.Configuration;
@@ -13,6 +15,7 @@ using HarmonyLib;
 using MonoMod.Utils;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace WhatTheBreak
 {
@@ -22,111 +25,115 @@ namespace WhatTheBreak
     [BepInPlugin(ThisAssembly.Plugin.GUID, ThisAssembly.Plugin.Name, ThisAssembly.Plugin.Version)]
     public sealed class WhatTheBreakPlugin : BaseUnityPlugin
     {
-        readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
         readonly Dictionary<string, ExceptionData> _exceptionMap = new Dictionary<string, ExceptionData>(StringComparer.Ordinal);
 
         Dictionary<string, List<MethodBase>> _patchMap = null;
 
-        void Awake()
+        void OnEnable()
         {
-            XLogHandler.onFatalError += XLogHandler_onException;
-            XLogHandler.onException += XLogHandler_onException;
-            MyPatches.OnException += OnPatchException;
-            _harmony.PatchAllRecursive(typeof(MyPatches));
+            Application.logMessageReceived += OnLogReceived;
 
             Logger.LogInfo("Loaded " + nameof(WhatTheBreakPlugin));
         }
 
-        void OnPatchException(Exception e)
-        {
-            Logger.LogInfo(e.ToString());
-            Logger.LogInfo("YAY");
-        }
-
         sealed class ExceptionData
         {
-            public List<string> Patchers = new List<string>();
-            public string Message;
-            public string Stacktrace;
-            public int Count;
-        }
+            public readonly Dictionary<string, StringBuilder> PatchesByPlugin = new Dictionary<string, StringBuilder>(StringComparer.Ordinal);
+            public HashSet<MethodBase> PossibleMethods = new HashSet<MethodBase>();
+            public string Stacktrace = string.Empty;
+            public string Message = string.Empty;
+            public int Count = 0;
 
-        const string DMDHeader = "(wrapper dynamic-method) ";
-
-        readonly char [] whitespace= { '\t', ' ' };
-
-        bool ParseStackTraceLines(string source)
-        {
-            bool foundPatcher = false;
-
-            foreach (string original in source.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries))
+            public void AddExceptionPatches(string prefix, ReadOnlyCollection<Patch> buckets)
             {
-                string line = original;
-                if (!line.StartsWith(DMDHeader))
+                foreach (Patch patch in buckets)
                 {
-                    // Not interesting.
-                    continue;
-                }
-
-                // type and method
-                int start = DMDHeader.Length;
-                int typeAndMethodEnd = line.IndexOfAny(whitespace, start);
-
-                //string typeAndMethod = line.Substring(start, typeAndMethodEnd - start);
-                //Logger.LogInfo("tam: " + typeAndMethod);
-
-                int typeEnd = line.LastIndexOf(".DMD<", start, typeAndMethodEnd);
-
-                //string type = line.Substring(start, typeEnd - start);
-                string patchInfo = line.Substring(typeEnd + ".DMD<".Length, typeAndMethodEnd - start - 1);
-
-                Logger.LogInfo(patchInfo);
-                int patchSep = patchInfo.IndexOf("..");
-                string patchType = patchInfo.Substring(0, patchSep);
-                string patchMethod = patchInfo.Substring(patchSep + 2);
-
-                Logger.LogInfo(patchType);
-                Logger.LogInfo(patchMethod);
-
-                if (_patchMap.TryGetValue(patchType, out var methods))
-                {
-                    foreach (var method in methods)
+                    if (!PatchesByPlugin.TryGetValue(patch.owner, out StringBuilder sb))
                     {
-                        if (method.Name == patchMethod)
-                        {
-
-                        }
+                        sb = new StringBuilder();
+                        PatchesByPlugin[patch.owner] = sb;
                     }
+
+                    sb.Append(prefix).Append("[index=").Append(patch.index).Append("]: ");
+                    sb.AppendLine(patch.PatchMethod.FullDescription());
                 }
-
-                // Skip over it.
-                start = typeAndMethodEnd + 1;
-
-                int end = line.IndexOfAny(whitespace, start);
-                if (end != -1 && line[end] == ')' && line[start] == '(')
-                {
-                    end--; start++;
-
-                    string parameters = line.Substring(start, end - start);
-                    Logger.LogInfo("par: " + parameters);
-                }
-
-                // parse parameters.
-
             }
 
-            return foundPatcher;
+            public void GetClipboardText(StringBuilder sb)
+            {
+                // Prep it for markdown :)
+                sb.Append("Exception hit ").Append(Count).Append(" times: ")
+                    .AppendLine(Message)
+                    .AppendLine(Stacktrace);
+
+                sb.AppendLine("Target methods matching by name:");
+                foreach (MethodBase method in PossibleMethods)
+                {
+                    sb.AppendLine(method.FullDescription());
+                }
+
+                sb.AppendLine().AppendLine("Relevant plugins:");
+
+
+                int i = 0;
+                foreach (KeyValuePair<string, StringBuilder> kvp in PatchesByPlugin)
+                {
+                    sb.Append(i).Append(". ").AppendLine(kvp.Key);
+                    sb.Append('\t').AppendLine(kvp.Value.ToString());
+                }
+            }
         }
 
-        void XLogHandler_onException(string errorString, string stackTrace)
+        void AddExceptionData(string message, string target, MethodBase result)
         {
+            if (_exceptionMap.TryGetValue(target, out ExceptionData exceptionData))
+            {
+                exceptionData.PossibleMethods.Add(result);
+                exceptionData.Count++;
+                return;
+            }
+
+            exceptionData = new ExceptionData {
+                Stacktrace = target,
+                Message = message,
+                Count = 1,
+            };
+
+            Patches patchInfo = PatchProcessor.GetPatchInfo(result);
+            exceptionData.PossibleMethods.Add(result);
+            exceptionData.AddExceptionPatches("Finalizer", patchInfo.Finalizers);
+            exceptionData.AddExceptionPatches("Prefix", patchInfo.Postfixes);
+            exceptionData.AddExceptionPatches("Postfix", patchInfo.Prefixes);
+            exceptionData.AddExceptionPatches("Transpiler", patchInfo.Transpilers);
+
+            _exceptionMap[target] = exceptionData;
+        }
+
+
+        readonly StacktraceParser _parser = new StacktraceParser();
+        UIButton _btn;
+
+        void OnLogReceived(string errorString, string stackTrace, LogType logType)
+        {
+            if (logType != LogType.Error && logType != LogType.Exception)
+            {
+                return;
+            }
+
+            // Prevent this from running if there's no fatal error tip window.
+            if (UIFatalErrorTip.instance == null)
+            {
+                return;
+            }
+
             if (_patchMap == null)
             {
                 _patchMap = new Dictionary<string, List<MethodBase>>();
-                foreach (var patchedMethod in PatchProcessor.GetAllPatchedMethods())
+
+                foreach (MethodBase patchedMethod in PatchProcessor.GetAllPatchedMethods())
                 {
-                    var key = patchedMethod.DeclaringType.FullName;
-                    if (!_patchMap.TryGetValue(key, out var methods))
+                    string key = patchedMethod.DeclaringType.FullName;
+                    if (!_patchMap.TryGetValue(key, out List<MethodBase> methods))
                     {
                         methods = new List<MethodBase>();
                         _patchMap[key] = methods;
@@ -136,65 +143,92 @@ namespace WhatTheBreak
                 }
             }
 
-
-            if (string.IsNullOrEmpty(stackTrace))
-            {
-                // Logged by the devs, they do LogError(exception);
-                // 
-                ParseStackTraceLines(errorString);
-            }
-            else
-            {
-                ParseStackTraceLines(stackTrace);
-            }
-
-                // at (wrapper dynamic-method) ContainingType.DMD<ClassPatched..MethodPatched> (ClassPatched)
-                // at (wrapper dynamic-method) UILoadGameWindow.DMD<UILoadGameWindow..RefreshList> (UILoadGameWindow) <0x0033b>
-                // Test+Generic`1[T].ThrowMe
-
-        }
-
-        void OnDestroy()
-        {
-            XLogHandler.onFatalError -= XLogHandler_onException;
-            XLogHandler.onException -= XLogHandler_onException;
-
-            _harmony.UnpatchSelf();
-        }
-
-        class MyPatches
-        {
-            public static event Action<Exception> OnException;
-
-            [HarmonyPostfix, HarmonyPatch(typeof(UnityEngine.Debug), nameof(UnityEngine.Debug.LogError), typeof(object))]
-            public static void LogError(object message)
-            {
-                if (message is Exception e)
+            // The devs log with LogError(exception);
+            if (string.IsNullOrEmpty(stackTrace)) {
+                int end = errorString.IndexOf('\n');
+                if (end != -1)
                 {
-                    OnException?.Invoke(e);
+                    stackTrace = errorString.Substring(end);
+                    errorString = errorString.Substring(0, end);
                 }
             }
 
-            [HarmonyPostfix, HarmonyPatch(typeof(UnityEngine.Debug), nameof(UnityEngine.Debug.LogError), typeof(object), typeof(UnityEngine.Object))]
-            public static void LogError(object message, UnityEngine.Object context)
-            {
-                if (message is Exception e)
+            bool update = _parser.ParseStackTraceLines(stackTrace, (type, method) => {
+                if (_patchMap.TryGetValue(type, out List<MethodBase> classPatched))
                 {
-                    OnException?.Invoke(e);
+                    foreach (MethodBase methodBase in classPatched)
+                    {
+                        if (methodBase.Name == method)
+                        {
+                            // TODO: Check parameters.
+                            AddExceptionData(errorString, stackTrace, methodBase);
+                        }
+                    }
+                }
+            });
+
+            if (update)
+            {
+                UIFatalErrorTip.instance.ShowError(errorString, stackTrace);
+
+                if (_btn == null)
+                {
+                    try
+                    {
+                        var go = GameObject.Find("UI Root/Overlay Canvas/Top Windows/Option Window/apply-button");
+                        var rect = (RectTransform)Instantiate(go).transform;
+
+                        rect.anchorMax = new Vector2(1, 0);
+                        rect.anchorMin = new Vector2(1, 0);
+                        rect.sizeDelta = new Vector2(120, 34);
+                        rect.pivot = new Vector2(1, 0);
+                        rect.anchoredPosition = new Vector2(-2, 2);
+
+                        rect.SetParent(UIFatalErrorTip.instance.transform, false);
+
+                        _btn = rect.gameObject.GetComponent<UIButton>();
+                        _btn.onClick += OnClick;
+
+                        // panel is 0.311, 0, 0.001, 0.902
+                        Image image = _btn.GetComponent<Image>();
+                        if (image != null)
+                        {
+                            image.color = new Color(0.8f, 0.1f, 0.1f, 1);
+                        }
+
+                        Text text = _btn.GetComponentInChildren<Text>();
+                        if (text != null)
+                        {
+                            text.text = "Copy to Clipboard";
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        gameObject.SetActive(false);
+                        Logger.LogWarning("Could not create copy button, disabling plugin: " + e.ToString());
+                    }
                 }
             }
+        }
 
-            [HarmonyPostfix, HarmonyPatch(typeof(UnityEngine.Debug), nameof(UnityEngine.Debug.LogException), typeof(Exception))]
-            public static void LogException(Exception exception)
-            {
-                OnException?.Invoke(exception);
-            }
+        void OnClick(int obj)
+        {
+            var sb = new StringBuilder();
 
-            [HarmonyPostfix, HarmonyPatch(typeof(UnityEngine.Debug), nameof(UnityEngine.Debug.LogException), typeof(Exception), typeof(UnityEngine.Object))]
-            public static void LogException(Exception exception, UnityEngine.Object context)
+            sb.AppendLine("```");
+            foreach (KeyValuePair<string, ExceptionData> e in _exceptionMap)
             {
-                OnException?.Invoke(exception);
+                e.Value.GetClipboardText(sb);
+                sb.AppendLine("==================");
             }
+            sb.AppendLine("```");
+
+            GUIUtility.systemCopyBuffer = sb.ToString();
+        }
+
+        void OnDisable()
+        {
+            Application.logMessageReceived -= OnLogReceived;
         }
     }
 }
