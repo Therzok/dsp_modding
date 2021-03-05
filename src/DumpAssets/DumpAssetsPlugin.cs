@@ -44,7 +44,7 @@ namespace DumpAssets
         {
             try
             {
-                string destinationDir = Initialize(out bool skip);
+                string destinationDir = Initialize(out bool skip, out string versionFile);
 
                 if (skip)
                 {
@@ -53,7 +53,7 @@ namespace DumpAssets
                 }
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                Logger.LogInfo("Processing prefabs, game might freeze...");
+                Logger.LogInfo("Processing prefabs '" + destinationDir + "', game might freeze...");
 
                 foreach (GameObject gameObject in Resources.LoadAll<GameObject>(""))
                 {
@@ -62,13 +62,17 @@ namespace DumpAssets
 
                 sw.Stop();
 
-                string[] contents = new[] { DBVersion, GameConfig.gameVersion.ToString() };
-                File.WriteAllLines(Path.Combine(destinationDir, "VERSION"), contents);
                 Logger.LogInfo("Finished dumping in " + sw.Elapsed.ToString());
                 Logger.LogInfo(_counters.GameObject.ToString() + " gameobjects");
                 Logger.LogInfo(_counters.Component.ToString() + " components");
                 Logger.LogInfo(_counters.Field.ToString() + " fields");
                 Logger.LogInfo(_counters.Property.ToString() + " properties");
+
+                string[] contents = new[] { DBVersion, GameConfig.gameVersion.ToString() };
+                Logger.LogInfo("Version " + DBVersion);
+                Logger.LogInfo(contents[1]);
+
+                File.WriteAllLines(Path.Combine(destinationDir, VersionFile), contents);
             }
             catch (Exception e)
             {
@@ -76,7 +80,7 @@ namespace DumpAssets
             }
         }
 
-        string Initialize(out bool skip)
+        string Initialize(out bool skip, out string versionFile)
         {
             string destinationDir = _outputPath.Value;
             if (!Path.IsPathRooted(destinationDir))
@@ -86,7 +90,7 @@ namespace DumpAssets
             // Resolve relative dirs.
             destinationDir = Path.GetFullPath(destinationDir);
 
-            string versionFile = Path.Combine(destinationDir, VersionFile);
+            versionFile = Path.Combine(destinationDir, VersionFile);
             string helpFile = Path.Combine(destinationDir, ReadmeFile);
 
             destinationDir = Path.Combine(destinationDir, AssetsDirectory);

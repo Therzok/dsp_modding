@@ -1,6 +1,6 @@
 ﻿# What The Break 🔍 mod
 
-A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod which fixes a quality of life issue with the error window, by giving you information about which plugins possibly broke it.
+A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod which improves the workflow of reporting errors in mods.
 
 ![File](images/file.png)
 
