@@ -4,6 +4,7 @@
     <DocumentationFile>$(OutDir)\$(AssemblyName).xml</DocumentationFile>
     
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ResolveBepInExReferences</PrepareForBuildDependsOn>
+    <PrepareForRunDependsOn>$(PrepareForRunDependsOn);RunPdb2Mdb</PrepareForRunDependsOn>
   </PropertyGroup>
 
   <!-- Generate PluginInfo.cs for plugins -->
@@ -49,7 +50,7 @@ partial class ThisAssembly
 
     <PropertyGroup>
       <PluginsPath>$(SteamGameInstallLocation)BepInEx\plugins\</PluginsPath>
-      <OutDir>$(PluginsPath)\$(Company)-$(AssemblyName)\</OutDir>
+      <OutDir>$(PluginsPath)$(Company)-$(AssemblyName)\</OutDir>
       <DocumentationFile>$(OutDir)\$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
@@ -143,20 +144,20 @@ partial class ThisAssembly
 
       <!-- Try resolving from project -->
       <PluginAssemblyReference Include="@(UnresolvedPluginReference)"
-                               Condition=" '%(Author)' != '' AND Exists('$(PluginsPath)\%(Author)-%(Identity)\') ">
+                               Condition=" '%(Author)' != '' AND Exists('$(PluginsPath)%(Author)-%(Identity)\') ">
         <InstallDir>$(PluginsPath)%(Author)-%(Identity)\</InstallDir>
       </PluginAssemblyReference>
       <UnresolvedPluginReference Remove="@(PluginAssemblyReference)" />
       
       <!-- Try resolving from author and plugin -->
       <PluginAssemblyReference Include="@(UnresolvedPluginReference)"
-                               Condition=" '%(Author)' != '' AND Exists('$(PluginsPath)\%(Author)-%(Identity)\') ">
+                               Condition=" '%(Author)' != '' AND Exists('$(PluginsPath)%(Author)-%(Identity)\') ">
         <InstallDir>$(PluginsPath)%(Author)-%(Identity)\</InstallDir>
       </PluginAssemblyReference>
       <UnresolvedPluginReference Remove="@(PluginAssemblyReference)" />
 
       <PluginAssemblyReference Include="@(UnresolvedPluginReference)"
-                               Condition=" '%(Author)' == '' AND Exists('$(PluginsPath)\%(Identity)\') ">
+                               Condition=" '%(Author)' == '' AND Exists('$(PluginsPath)%(Identity)\') ">
         <InstallDir>$(PluginsPath)%(Identity)\</InstallDir>
       </PluginAssemblyReference>
       <UnresolvedPluginReference Remove="@(PluginAssemblyReference)" />
@@ -177,4 +178,41 @@ partial class ThisAssembly
     <Warning Text="Could not resolve plugin reference '%(UnresolvedPluginReference.Identity)' " Condition=" '%(UnresolvedPluginReference.Identity)' != '' " />
   </Target>
 
+
+  <Target Name="RunPdb2Mdb"
+          Inputs="@(MainAssembly)"
+          Outputs="@(MainAssembly->'%(Identity).mdb')"
+          DependsOnTargets="CopyFilesToOutputDirectory">
+    <PropertyGroup>
+        <Pdb2MdbUrl>https://gist.github.com/jbevain/ba23149da8369e4a966f/raw/36b3cdd4dd149ab966bbb48141ef8ee2d37c890f/pdb2mdb.exe</Pdb2MdbUrl>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <Pdb2MdbInput Include="@(MainAssembly)" />
+      <Pdb2MdbOutput Include="@(MainAssembly->'%(Identity).mdb')" />
+    </ItemGroup>
+    
+    <DownloadFile SourceUrl="$(Pdb2MdbUrl)"
+                  DestinationFolder="$(IntermediateOutputPath)">
+      <Output TaskParameter="DownloadedFile"
+              PropertyName="Pdb2MdbTool" />
+    </DownloadFile>
+
+    <Exec Command="&quot;$(Pdb2MdbTool)&quot; &quot;%(Pdb2MdbInput.Identity)&quot;"
+          WorkingDirectory="@(Pdb2MdbInput->'%(rootdir)%(directory)')">
+      <Output TaskParameter="ExitCode"
+              PropertyName="Pdb2MdbExitCode" />
+    </Exec>
+  
+    <Warning Text="Failed to run Pdb2Mdb $(Pdb2MdbExitCode)"
+             Condition=" $(Pdb2MdbExitCode) != 0 " />
+ 
+    <Warning Text="Missing mdb for assembly @(Pdb2MdbOutput)"
+             Condition=" !Exists(%(FullPath)) " />
+  
+    <ItemGroup>
+      <FileWrites Include="@(Pdb2MdbOutput)" />
+      <FileWrites Include="$(IntermediateOutputPath)pdb2mdb.exe" />
+    </ItemGroup>
+  </Target>
 </Project>

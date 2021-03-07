@@ -4,7 +4,10 @@
       "commandName": "Executable",
       "executablePath": "$(SteamInstallLocation)/steam.exe",
       "commandLineArgs": "-applaunch $(SteamGameId)",
-      "commandLineArgs_comment": "Running with browser protocol does not work ¯\\_(ツ)_/¯"
+      "commandLineArgs_comment": "Running with browser protocol does not work ¯\\_(ツ)_/¯",
+      "environmentVariables": {
+        "MONO_DEBUGGER_AGENT": "transport=dt_socket,address=127.0.0.1:56000,defer=y"
+      }
     }
   }
 }

@@ -30,8 +30,8 @@ namespace YouNameIt
         public void Track(PlanetTransport transport)
         {
             // Start monitoring this planet.
-            Debug.Assert(transport != null);
-            Debug.Assert(Transport == null);
+            Debug.Assert(transport != null, "Trying to subscribe null transport");
+            Debug.Assert(Transport == null, $"Transport already registered {Transport.planet.id}");
 
             Transport = transport;
 
@@ -49,7 +49,7 @@ namespace YouNameIt
 
         public void Clear()
         {
-            Debug.Assert(Transport != null);
+            Debug.Assert(Transport != null, $"Trying to unsubscribe, but Transport is already null");
 
             Transport = null;
 
@@ -81,7 +81,7 @@ namespace YouNameIt
             }
 
             // Get point above station
-            Vector3 newPos = station.shipDockPos + (station.shipDockRot * Vector3.up * 10);
+            Vector3 newPos = station.shipDockPos + (station.shipDockRot * new Vector3(0, 10f, 0));
 
             ResizeArray(ref _texts, station.id);
 
