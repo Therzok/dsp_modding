@@ -94,7 +94,6 @@ namespace SaveTheWindows
 
         void OnDestroy()
         {
-            _serializer.Dispose();
             _harmony.UnpatchSelf();
         }
 

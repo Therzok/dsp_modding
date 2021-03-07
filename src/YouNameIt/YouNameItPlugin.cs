@@ -22,7 +22,15 @@ namespace YouNameIt
     public sealed class YouNameItPlugin : BaseUnityPlugin
     {
         readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
-        readonly LifetimeTrackerPool _trackerPool = new LifetimeTrackerPool();
+        readonly LifetimeTrackerPool _trackerPool;
+
+        /// <summary>
+        /// Creates a new Plugin instance.
+        /// </summary>
+        public YouNameItPlugin()
+        {
+            _trackerPool = new LifetimeTrackerPool(Config);
+        }
 
         void Awake()
         {
@@ -33,14 +41,12 @@ namespace YouNameIt
 
         void OnEnable()
         {
-            Hooks.Game.Begin += _trackerPool.Enable;
-            Hooks.Game.End += _trackerPool.Disable;
+            _trackerPool.Enable();
         }
 
         void OnDisable()
         {
-            Hooks.Game.Begin -= _trackerPool.Enable;
-            Hooks.Game.End -= _trackerPool.Disable;
+            _trackerPool.Disable();
         }
 
         void OnDestroy()

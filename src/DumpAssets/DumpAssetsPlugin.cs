@@ -99,15 +99,12 @@ namespace DumpAssets
             skip = false;
             try
             {
-                string content = File.ReadAllText(versionFile);
-                string[] parts = content.Split(new[] { '\n' });
-                if (parts.Length == 2 && parts[0] == DBVersion && parts[1] == GameConfig.gameVersion.ToString())
-                {
-                    skip = true;
-                }
+                string[] lines = File.ReadAllText(versionFile).Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                skip = lines.Length >= 2 && lines[0] == DBVersion && lines[1] == GameConfig.gameVersion.ToString();
             }
-            catch
+            catch (Exception e)
             {
+                Logger.LogWarning($"Failed to load version file '{VersionFile}': {e}");
             }
 
             File.WriteAllText(helpFile, @"Generated via DumpAssetsPlugin from https://github.com/Therzok/dsp_modding");

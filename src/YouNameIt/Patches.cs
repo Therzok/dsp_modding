@@ -15,6 +15,12 @@ namespace YouNameIt
             public static Action End;
         }
 
+        public static class Factory
+        {
+            public static Action<PlanetData> Loaded;
+            public static Action<PlanetData> Unloading;
+        }
+
         public static class Transport
         {
             public static Action<PlanetTransport, PrefabDesc, StationComponent> Added;
@@ -62,7 +68,6 @@ namespace YouNameIt
             [HarmonyPostfix, HarmonyPatch(nameof(PlanetTransport.NewStationComponent))]
             public static void AddStationComponent(PlanetTransport __instance, PrefabDesc _desc, StationComponent __result)
             {
-                // _pcId is powerConsumerId
                 Hooks.Transport.Added?.Invoke(__instance, _desc, __result);
             }
 
@@ -70,6 +75,22 @@ namespace YouNameIt
             public static void RemoveStationComponent(PlanetTransport __instance, int id)
             {
                 Hooks.Transport.Removed?.Invoke(__instance, id);
+            }
+        }
+
+        [HarmonyPatch(typeof(PlanetData))]
+        public class PlanetDataPatch
+        {
+            [HarmonyPostfix, HarmonyPatch(nameof(PlanetData.NotifyFactoryLoaded))]
+            public static void NotifyFactoryLoaded(PlanetData __instance)
+            {
+                Hooks.Factory.Loaded?.Invoke(__instance);
+            }
+
+            [HarmonyPrefix, HarmonyPatch(nameof(PlanetData.UnloadFactory))]
+            public static void UnloadFactory(PlanetData __instance)
+            {
+                Hooks.Factory.Unloading?.Invoke(__instance);
             }
         }
     }

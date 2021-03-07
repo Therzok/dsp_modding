@@ -86,17 +86,17 @@ namespace PrefabBlocks
 
             FixTextMeshProMissing();
 
-            WorldPanel = _assets.LoadAsset<GameObject>("Assets/worldpanel.prefab");
-            WorldText = _assets.LoadAsset<GameObject>("Assets/worldtext.prefab");
-            UIText = _assets.LoadAsset<GameObject>("Assets/uitext.prefab");
+            WorldPanel = _assets.LoadAsset<GameObject>("assets/worldpanel.prefab");
+            WorldText = _assets.LoadAsset<GameObject>("assets/worldtext.prefab");
+            UIText = _assets.LoadAsset<GameObject>("assets/uitext.prefab");
         }
 
         void FixTextMeshProMissing()
         {
-            const string TMPPrefix = "Assets/textmesh pro/resources";
+            const string TMPPrefix = "assets/textmesh pro/resources";
 
             // Check if we have a default style sheet set, if we do, we're fine.
-            if (Resources.Load<TMP_StyleSheet>("Style Sheets/Default Style Sheet") != null)
+            if (Resources.Load<TMP_StyleSheet>("style sheets/default style sheet") != null)
             {
                 // Already present, so no need to do anything.
                 return;

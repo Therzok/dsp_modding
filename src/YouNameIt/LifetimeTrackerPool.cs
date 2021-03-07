@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using BepInEx.Configuration;
 using BepInEx.Logging;
+
+using TMPro;
 
 using UnityEngine;
 
@@ -11,14 +14,37 @@ namespace YouNameIt
 {
     sealed partial class LifetimeTrackerPool
     {
-        //ConfigEntry
-        public static bool GalacticOnly = true;
-
         const int DefaultBufferSize = 8;
 
-        readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(LifetimeTrackerPool));
-        Tracker[] _trackers = new Tracker[DefaultBufferSize];
-        int _trackerCount;
+        sealed class PoolFactory : PoolFactory<TransportTracker>
+        {
+            readonly ManualLogSource _log;
+            readonly ConfigEntry<TrackedStations> _trackedStations;
+
+            public PoolFactory(ManualLogSource log, ConfigEntry<TrackedStations> trackedStations)
+            {
+                _log = log;
+                _trackedStations = trackedStations;
+            }
+
+            protected override TransportTracker OnCreate()
+            {
+                return new TransportTracker(_log, _trackedStations);
+            }
+        }
+
+        readonly List<TransportTracker> _trackers = new List<TransportTracker>(DefaultBufferSize);
+        readonly Pool<TransportTracker> _pool;
+
+        public LifetimeTrackerPool(ConfigFile config)
+        {
+            var factory = new PoolFactory(
+                BepInEx.Logging.Logger.CreateLogSource(nameof(LifetimeTrackerPool)),
+                config.Bind(nameof(YouNameIt), nameof(TrackedStations), TrackedStations.Interplanetary)
+            );
+
+            _pool = new Pool<TransportTracker>(DefaultBufferSize, factory);
+        }
 
         internal void Enable()
         {
@@ -26,38 +52,34 @@ namespace YouNameIt
             Hooks.Transport.Removed += OnTransportRemoved;
             Hooks.StationWindow.Submit += OnTransportNameChanged;
 
+            Hooks.Factory.Loaded += OnFactoryLoaded;
+            Hooks.Factory.Unloading += OnFactoryUnloading;
+        }
 
-            GameData data = GameMain.data;
+        void OnFactoryLoaded(PlanetData data)
+        {
+            TransportTracker tracker = _pool.Rent();
+            _trackers.Add(tracker);
 
-            for (int i = 0; i < data.factoryCount; ++i)
+            tracker.Track(data.factory.transport);
+        }
+
+        void OnFactoryUnloading(PlanetData data)
+        {
+            if (data.factoryLoaded && TryGetTracker(data.factory.transport, out TransportTracker tracker))
             {
-                PlanetFactory factory = data.factories[i];
-                if (!factory.planet.factoryLoaded)
-                {
-                    continue;
-                }
+                tracker.Clear();
+                _trackers.Remove(tracker);
 
-                // Manual list impl.
-                if (_trackerCount == _trackers.Length)
-                {
-                    Array.Resize(ref _trackers, _trackers.Length * 2);
-                }
-
-                Tracker newTracker = _trackers[_trackerCount];
-                if (newTracker == null)
-                {
-                    newTracker = new Tracker(_log);
-                    _trackers[_trackerCount++] = newTracker;
-                }
-
-                // Start monitoring this planet.
-                Debug.Assert(newTracker.Transport == null);
-                newTracker.Track(factory.transport);
+                _pool.Return(tracker);
             }
         }
 
         internal void Disable()
         {
+            Hooks.Factory.Loaded -= OnFactoryLoaded;
+            Hooks.Factory.Unloading -= OnFactoryUnloading;
+
             Hooks.Transport.Added -= OnTransportAdded;
             Hooks.Transport.Removed -= OnTransportRemoved;
             Hooks.StationWindow.Submit -= OnTransportNameChanged;
@@ -67,7 +89,7 @@ namespace YouNameIt
 
         internal void OnTransportNameChanged(UIStationWindow window, string name)
         {
-            if (TryGetTracker(window.transport, out Tracker tracker))
+            if (TryGetTracker(window.transport, out TransportTracker tracker))
             {
                 tracker.NameChange(window.stationId);
             }
@@ -75,7 +97,7 @@ namespace YouNameIt
 
         internal void OnTransportAdded(PlanetTransport transport, PrefabDesc desc, StationComponent station)
         {
-            if (TryGetTracker(transport, out Tracker tracker))
+            if (TryGetTracker(transport, out TransportTracker tracker))
             {
                 tracker.Track(station);
             }
@@ -83,18 +105,17 @@ namespace YouNameIt
 
         internal void OnTransportRemoved(PlanetTransport transport, int id)
         {
-            if (TryGetTracker(transport, out Tracker tracker))
+            if (TryGetTracker(transport, out TransportTracker tracker))
             {
                 tracker.Untrack(id);
             }
         }
 
-        bool TryGetTracker(PlanetTransport transport, out Tracker tracker)
+        bool TryGetTracker(PlanetTransport transport, out TransportTracker tracker)
         {
-            for (int i = 0; i < _trackerCount; ++i)
+            for (int i = 0; i < _trackers.Count; ++i)
             {
-                tracker = _trackers[i];
-                if (tracker.Transport == transport)
+                if ((tracker = _trackers[i]).Transport == transport)
                 {
                     return true;
                 }
@@ -105,12 +126,13 @@ namespace YouNameIt
 
         public void Clear()
         {
-            for (int i = 0; i < _trackerCount; ++i)
+            for (int i = 0; i < _trackers.Count; ++i)
             {
                 _trackers[i].Clear();
+                _pool.Return(_trackers[i]);
             }
 
-            _trackerCount = 0;
+            _trackers.Clear();
         }
     }
 }

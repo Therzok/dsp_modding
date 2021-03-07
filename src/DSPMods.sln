@@ -41,6 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThunderstoreTemplates", "Th
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6B952F3E-7BFD-4EA3-9C87-30908567FCF6}"
 	ProjectSection(SolutionItems) = preProject
+		..\docs\Assembly-CSharp.xml = ..\docs\Assembly-CSharp.xml
 		..\docs\README.md = ..\docs\README.md
 	EndProjectSection
 EndProject

@@ -12,47 +12,13 @@ using UnityEngine;
 
 namespace SaveTheWindows
 {
-    sealed class WindowSerializer : IDisposable
+    sealed class WindowSerializer
     {
         readonly ManualLogSource _log;
-
-        readonly XmlWriterSettings _xmlWriterSettings;
-        readonly XmlReaderSettings _xmlReaderSettings;
-        readonly ConfigEntry<bool> _humanReadable;
 
         public WindowSerializer(ConfigFile config, ManualLogSource log)
         {
             _log = log;
-
-            var description = new ConfigDescription("Adds indentation to the save file allowing it to be read by humans. Enabling impacts performance.");
-            _humanReadable = config.Bind(nameof(SaveTheWindows), key: "HumanReadable", defaultValue: false, description);
-
-            _humanReadable.SettingChanged += HumanReadableSettingChanged;
-
-            _xmlWriterSettings = new XmlWriterSettings {
-                CheckCharacters = false,
-                CloseOutput = true,
-                Encoding = Encoding.ASCII,
-                Indent = _humanReadable.Value,
-            };
-
-            _xmlReaderSettings = new XmlReaderSettings {
-                CheckCharacters = false,
-                CloseInput = true,
-                IgnoreComments = true,
-                IgnoreProcessingInstructions = true,
-                IgnoreWhitespace = true,
-            };
-        }
-
-        public void Dispose()
-        {
-            _humanReadable.SettingChanged -= HumanReadableSettingChanged;
-        }
-
-        void HumanReadableSettingChanged(object sender, EventArgs e)
-        {
-            _xmlWriterSettings.Indent = _humanReadable.Value;
         }
 
         internal bool LoadData(string saveFileName, string source, Dictionary<string, RectTransform> windows)
