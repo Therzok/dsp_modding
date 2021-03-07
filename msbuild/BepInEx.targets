@@ -184,7 +184,7 @@ partial class ThisAssembly
           Outputs="@(MainAssembly->'%(Identity).mdb')"
           DependsOnTargets="CopyFilesToOutputDirectory">
     <PropertyGroup>
-        <Pdb2MdbUrl>https://gist.github.com/jbevain/ba23149da8369e4a966f/raw/36b3cdd4dd149ab966bbb48141ef8ee2d37c890f/pdb2mdb.exe</Pdb2MdbUrl>
+      <Pdb2MdbUrl>https://gist.github.com/jbevain/ba23149da8369e4a966f/raw/36b3cdd4dd149ab966bbb48141ef8ee2d37c890f/pdb2mdb.exe</Pdb2MdbUrl>
     </PropertyGroup>
     
     <ItemGroup>
