@@ -12,6 +12,7 @@
     <Compile Include="..\src\Shared\ArrayUtil.cs" LinkBase="Import"/>
     <Compile Include="..\src\Shared\CompilerServicesStubs.cs" LinkBase="Import"/>
     <Compile Include="..\src\Shared\RealFakeSpan.cs" LinkBase="Import"/>
+    <Compile Include="..\src\Shared\ValueTuple.cs" LinkBase="Import"/>
     <Compile Include="..\src\WhatTheBreak\StacktraceParser.cs" Link="Import\StacktraceParser.cs" />
   </ItemGroup>
 
