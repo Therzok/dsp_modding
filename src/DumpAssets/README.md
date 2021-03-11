@@ -1,6 +1,6 @@
-# DumpAssets ⛏⛏⛏ mod
+# DumpAssets mod
 
-A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) mod library that does not do anything by itself.
+A [Dyson Sphere Program](https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/) ⛏⛏⛏ mod library that does not do anything by itself.
 
 It generates the game assets in a navigatable markdown format.
 

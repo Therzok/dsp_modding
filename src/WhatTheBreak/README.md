@@ -46,7 +46,7 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 
 ### v1.0.0
 
-* Improve error report to include Plugin Author, Name and dll.
+* Improve error report to include the plugin directory and assembly.
 
 ### v0.1.0
 
