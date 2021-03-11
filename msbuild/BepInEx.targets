@@ -36,6 +36,7 @@ static partial class ThisAssembly
     <ItemGroup>
       <Compile Remove="$(PluginInfoFile)" />
       <Compile Include="$(PluginInfoFile)" />
+      
       <FileWrites Include="$(PluginInfoFile)" />
     </ItemGroup>
   </Target>
