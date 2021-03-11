@@ -14,6 +14,10 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 
 ## Changelog
 
+### v1.1 Hotfix
+
+* Version in Thunderstore displaying 1.0.x instead of 1.1.x
+ 
 ### v1.1
 
 * Fixes an issue that caused nothing to get saved! Sorry! 🙏

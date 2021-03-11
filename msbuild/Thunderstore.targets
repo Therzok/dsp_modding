@@ -33,8 +33,8 @@
 
   
   <Target Name="GenerateManifestJson"
-          Inputs="$(MSBuildAllProjects)"
-          Outputs="$(IntermediateOutputPath)manifest.json">
+          Inputs="$(MSBuildAllProjects);$(MSBuildProjectDirectory)version.json"
+          Outputs="$(OutputPath)manifest.json">
     <Error Text="Missing AssemblyName" Condition=" '$(AssemblyName)' == '' "/>
     <Error Text="Missing Version" Condition=" '$(Version)' == '' "/>
     <Error Text="Missing RepositoryUrl" Condition=" '$(RepositoryUrl)' == '' "/>
@@ -57,7 +57,7 @@
     </Exec>
 
     <PropertyGroup>
-      <ManifestJsonFile>$(IntermediateOutputPath)manifest.json</ManifestJsonFile>
+      <ManifestJsonFile>$(OutputPath)manifest.json</ManifestJsonFile>
       <ManifestJsonContent>
         <![CDATA[
 {
@@ -79,8 +79,6 @@
 
     <ItemGroup>
       <FileWrites Include="$(ManifestJsonFile)" />
-
-      <Thunderstore Include="$(ManifestJsonFile)" />
     </ItemGroup>
   </Target>
 
