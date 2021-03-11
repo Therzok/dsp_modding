@@ -23,6 +23,10 @@ namespace SaveTheWindows
 
         internal bool LoadData(string saveFileName, string source, Dictionary<string, RectTransform> windows)
         {
+            long token = 0;
+
+            _log.DevMeasureStart(ref token);
+
             using (var reader = new BinaryReader(File.OpenRead(saveFileName)))
             {
                 int version = reader.ReadInt32(); // Version
@@ -59,11 +63,17 @@ namespace SaveTheWindows
                 }
             }
 
+            _log.DevMeasureEnd(token);
+
             return true;
         }
 
         internal void SaveData(string saveFileName, string source, RectTransform[] windows)
         {
+            long token = 0;
+
+            _log.DevMeasureStart(ref token);
+
             using (var writer = new BinaryWriter(File.OpenWrite(saveFileName)))
             {
                 writer.Write(1); // Version
@@ -79,6 +89,8 @@ namespace SaveTheWindows
                     writer.Write(anchor.y);
                 }
             }
+
+            _log.DevMeasureEnd(token);
         }
     }
 }

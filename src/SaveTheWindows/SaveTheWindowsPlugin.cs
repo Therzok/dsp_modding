@@ -22,6 +22,7 @@ namespace SaveTheWindows
     public sealed class SaveTheWindowsPlugin : BaseUnityPlugin
     {
         readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
+        WindowManager _manager;
 
         readonly WindowSerializer _serializer;
         RectTransform[] _transformsArray = ArrayUtil.Empty<RectTransform>();
@@ -37,6 +38,7 @@ namespace SaveTheWindows
 
         void Awake()
         {
+            _manager = new WindowManager(Path.Combine(GameConfig.gameDocumentFolder, nameof(SaveTheWindowsPlugin)), "ui.dat");
             _harmony.PatchAllRecursive(typeof(Patches));
         }
 
@@ -74,14 +76,14 @@ namespace SaveTheWindows
                 _transforms[wnd.name] = wnd.dragTrans;
             }
 
-            WindowManager.Instance.LoadData(_serializer, nameof(DSPGame), _transforms);
+            _manager.LoadData(_serializer, nameof(DSPGame), _transforms);
 
             Logger.DevMeasureEnd(token);
         }
 
         void CloseGameUI()
         {
-            WindowManager.Instance.SaveData(_serializer, nameof(DSPGame), _transformsArray);
+            _manager.SaveData(_serializer, nameof(DSPGame), _transformsArray);
             _transformsArray = ArrayUtil.Empty<RectTransform>();
             _transforms.Clear();
         }

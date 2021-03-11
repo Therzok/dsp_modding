@@ -19,19 +19,21 @@ namespace SaveTheWindows
     /// </summary>
     public sealed partial class WindowManager
     {
-        /// <summary>
-        /// The instance of the WindowManager to use.
-        /// </summary>
-        public static readonly WindowManager Instance = new WindowManager(Path.Combine(GameConfig.gameDocumentFolder, nameof(SaveTheWindowsPlugin)));
-
         readonly ManualLogSource _log = BepInEx.Logging.Logger.CreateLogSource(nameof(WindowManager));
         readonly string _saveDirectory;
         readonly string _saveFile;
+        readonly string _saveFileTemp;
 
-        WindowManager(string saveDirectory)
+        internal WindowManager(string saveDirectory, string saveFileName)
         {
-            _saveDirectory = saveDirectory;
-            _saveFile = Path.Combine(_saveDirectory, "ui.dat");
+            _saveDirectory = saveDirectory.Replace('/', Path.DirectorySeparatorChar);
+            _saveFile = Path.Combine(_saveDirectory, saveFileName);
+            _saveFileTemp += ".tmp";
+        }
+
+        static string GetBackupFileName(string original)
+        {
+            return original + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
         }
 
         internal bool LoadData(WindowSerializer serializer, string source, Dictionary<string, RectTransform> transforms)
@@ -45,7 +47,16 @@ namespace SaveTheWindows
             }
             catch (Exception e)
             {
-                _log.LogError("Failed to load UI data: " + e.ToString());
+                _log.LogError(string.Format("Failed to load UI data, moving {0} to backup: {1}", _saveFile, e.ToString()));
+
+                try
+                {
+                    File.Move(_saveFile, GetBackupFileName(_saveFile));
+                }
+                catch (Exception e2)
+                {
+                    _log.LogError("Failed to move UI data file to backup: " + e2.ToString());
+                }
             }
 
             return false;
@@ -57,11 +68,23 @@ namespace SaveTheWindows
             {
                 Directory.CreateDirectory(_saveDirectory);
 
-                serializer.SaveData(_saveFile, source, transforms);
+                if (File.Exists(_saveFile))
+                {
+                    string backupFile = GetBackupFileName(_saveFile);
+                    File.Move(_saveFile, backupFile);
+                    serializer.SaveData(_saveFile, source, transforms);
+
+                    // Won't be reached in case of issues.
+                    File.Delete(backupFile);
+                }
+                else
+                {
+                    serializer.SaveData(_saveFile, source, transforms);
+                }
             }
             catch (Exception e)
             {
-                _log.LogError("Failed to save UI data: " + e.ToString());
+                _log.LogError(string.Format("Failed to save UI '{0}' data: {1}", _saveFile, e.ToString()));
             }
         }
     }
