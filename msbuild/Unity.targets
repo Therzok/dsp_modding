@@ -1,19 +1,15 @@
 <Project>
   <PropertyGroup>
-    <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ResolveUnityReferences;BackupGameBinaries</PrepareForBuildDependsOn>
+    <ResolveReferencesDependsOn>BackupGameBinaries;$(ResolveReferencesDependsOn)</ResolveReferencesDependsOn>
   </PropertyGroup>
-  
-  <Target Name="ResolveUnityReferences"
-          Returns="@(Reference)"
-          DependsOnTargets="FindSteamGame">
-    <PropertyGroup>
-      <UnityAssembliesPath>$(SteamGameInstallLocation)$(UnityGameName)_Data\Managed\</UnityAssembliesPath>
-    </PropertyGroup>
 
-    <ItemGroup>
-      <Reference Include="@(UnityReference->'$(UnityAssembliesPath)%(Identity)')" Private="False" SpecificVersion="true"/>
-    </ItemGroup>
-  </Target>
+  <ItemGroup>
+    <GameBackupFile Include="$(UnityGameName).exe" />
+    <GameBackupFile Include="UnityPlayer.dll" />
+    <GameBackupFile Include="WinPixEventRuntime.dll" />
+    <GameBackupFile Include="VERSION" />
+    <GameBackupFile Include="$(UnityGameName)_Data\boot.config" />
+  </ItemGroup>
 
   <UsingTask TaskName="ParseGameVersionFile"
            TaskFactory="RoslynCodeTaskFactory"
@@ -54,8 +50,8 @@
 
   <Target Name="ResolveGameVersion"
           Returns="@(GameVersionFile)"
-          DependsOnTargets="FindSteamGame">
-    <ParseGameVersionFile GameVersionFile="$(SteamGameInstallLocation)VERSION">
+          Condition="Exists('$(GameVersionBackup)')">
+    <ParseGameVersionFile GameVersionFile="$(GameInstallLocation)VERSION">
       <Output TaskParameter="GameVersion" PropertyName="GameVersion" />
     </ParseGameVersionFile>
 
@@ -63,7 +59,7 @@
       <GameVersionFile Include="$(GameVersionBackup)$(GameVersion)\VERSION" />
     </ItemGroup>
     
-    <Copy SourceFiles="$(SteamGameInstallLocation)VERSION"
+    <Copy SourceFiles="$(GameInstallLocation)VERSION"
           DestinationFiles="@(GameVersionFile)"
           Retries="5"
           RetryDelayMilliseconds="100"
@@ -71,18 +67,12 @@
   </Target>
 
   <Target Name="BackupGameBinaries"
-          Inputs="@(GameVersionFile);@(GameBackupFile->'$(SteamGameInstallLocation)%(Identity)')"
-          Outputs="$(GameVersionBackup)\$(GameVersion)\"
-          DependsOnTargets="FindSteamGame;ResolveGameVersion">
-    <ItemGroup>
-      <GameBackupFile Include="$(UnityGameName).exe" />
-      <GameBackupFile Include="UnityPlayer.dll" />
-      <GameBackupFile Include="WinPixEventRuntime.dll" />
-      <GameBackupFile Include="VERSION" />
-      <GameBackupFile Include="$(UnityGameName)_Data\boot.config" />
-    </ItemGroup>
+          Inputs="@(GameVersionFile);@(GameBackupFile->'$(GameInstallLocation)%(Identity)')"
+          Outputs="@(GameBackupFile->'$(GameVersionBackup)$(GameVersion)\%(Identity)')"
+          DependsOnTargets="ResolveGameVersion"
+          Condition="Exists('$(GameVersionBackup)')">
 
-    <Copy SourceFiles="@(GameBackupFile->'$(SteamGameInstallLocation)%(Identity)')"
+    <Copy SourceFiles="@(GameBackupFile->'$(GameInstallLocation)%(Identity)')"
           DestinationFiles="@(GameBackupFile->'$(GameVersionBackup)$(GameVersion)\%(Identity)')"
           Retries="5"
           RetryDelayMilliseconds="100"
@@ -90,9 +80,48 @@
   </Target>
 
   <Target Name="PublishGameXmlDocumentation"
-          DependsOnTargets="FindSteamGame"
           AfterTargets="AfterBuild"
-          Inputs="$(MSBuildThisFileDirectory)..\docs\Assembly-CSharp.xml"
-          Outputs="$(SteamGameInstallLocation)$(UnityGameName)_Data\Managed\Assembly-CSharp.xml">
+          Condition=" '$(GameDocumentationFile)' != '' "
+          Inputs="$(GameDocumentationFile)"
+          Outputs="$(UnityAssembliesPath)Assembly-CSharp.xml">
+  </Target>
+
+  <Target Name="RunPdb2Mdb"
+          Condition=" '$(TargetFramework)' == 'net35' "
+          Inputs="@(MainAssembly)"
+          Outputs="@(MainAssembly->'%(Identity).mdb')"
+          DependsOnTargets="CopyFilesToOutputDirectory">
+    <PropertyGroup>
+      <Pdb2MdbUrl>https://gist.github.com/jbevain/ba23149da8369e4a966f/raw/36b3cdd4dd149ab966bbb48141ef8ee2d37c890f/pdb2mdb.exe</Pdb2MdbUrl>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <Pdb2MdbInput Include="@(MainAssembly)" />
+      <Pdb2MdbOutput Include="@(MainAssembly->'%(Identity).mdb')" />
+    </ItemGroup>
+    
+    <DownloadFile SourceUrl="$(Pdb2MdbUrl)"
+                  DestinationFolder="$(IntermediateOutputPath)"
+                  SkipUnchangedFiles="true">
+      <Output TaskParameter="DownloadedFile"
+              PropertyName="Pdb2MdbTool" />
+    </DownloadFile>
+
+    <Exec Command="&quot;$(Pdb2MdbTool)&quot; &quot;%(Pdb2MdbInput.Identity)&quot;"
+          WorkingDirectory="@(Pdb2MdbInput->'%(rootdir)%(directory)')">
+      <Output TaskParameter="ExitCode"
+              PropertyName="Pdb2MdbExitCode" />
+    </Exec>
+  
+    <Warning Text="Failed to run Pdb2Mdb $(Pdb2MdbExitCode)"
+             Condition=" $(Pdb2MdbExitCode) != 0 " />
+ 
+    <Warning Text="Missing mdb for assembly @(Pdb2MdbOutput)"
+             Condition=" !Exists(%(FullPath)) " />
+  
+    <ItemGroup>
+      <FileWrites Include="@(Pdb2MdbOutput)" />
+      <FileWrites Include="$(IntermediateOutputPath)pdb2mdb.exe" />
+    </ItemGroup>
   </Target>
 </Project>

@@ -9,12 +9,6 @@ namespace YouNameIt
 {
     static class Hooks
     {
-        public static class Game
-        {
-            public static Action Begin;
-            public static Action End;
-        }
-
         public static class Factory
         {
             public static Action<PlanetData> Loaded;
@@ -36,22 +30,6 @@ namespace YouNameIt
 
     static class Patches
     {
-        [HarmonyPatch(typeof(GameMain))]
-        public class GameMainPatch
-        {
-            [HarmonyPostfix, HarmonyPatch(nameof(Begin))]
-            public static void Begin()
-            {
-                Hooks.Game.Begin?.Invoke();
-            }
-
-            [HarmonyPostfix, HarmonyPatch(nameof(End))]
-            public static void End()
-            {
-                Hooks.Game.End?.Invoke();
-            }
-        }
-
         [HarmonyPatch(typeof(UIStationWindow))]
         public class UIStationWindowPatch
         {

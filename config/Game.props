@@ -1,0 +1,11 @@
+<Project>
+  <!-- This is where most of the project configuration lives -->
+  <PropertyGroup Label="Dyson Sphere Program">
+    <GameInstallLocation>K:\Programs\Steam\steamapps\common\Dyson Sphere Program\</GameInstallLocation>
+    <SteamGameId>1366540</SteamGameId>
+
+    <UnityGameName>DSPGAME</UnityGameName>
+    <TargetFramework>net35</TargetFramework>
+    <GameDocumentationFile>$(MSBuildThisFileDirectory)..\docs\Assembly-CSharp.xml</GameDocumentationFile>
+  </PropertyGroup>
+</Project>

@@ -32,7 +32,9 @@
   </UsingTask>
 
   
-  <Target Name="GenerateManifestJson" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)manifest.json">
+  <Target Name="GenerateManifestJson"
+          Inputs="$(MSBuildAllProjects)"
+          Outputs="$(IntermediateOutputPath)manifest.json">
     <Error Text="Missing AssemblyName" Condition=" '$(AssemblyName)' == '' "/>
     <Error Text="Missing Version" Condition=" '$(Version)' == '' "/>
     <Error Text="Missing RepositoryUrl" Condition=" '$(RepositoryUrl)' == '' "/>
@@ -46,13 +48,21 @@
       <Output PropertyName="_ManifestDependencies" TaskParameter="Result" />
     </GenerateManifestDependenciesList>
 
+    <Exec Command="nbgv get-version -v SimpleVersion -p $(MSBuildProjectDirectory)"
+          EchoOff="true"
+          ConsoleToMSBuild="true"
+          WorkingDirectory="$(SolutionDir)">
+      <Output TaskParameter="ConsoleOutput"
+              PropertyName="NerdBankOutput" />
+    </Exec>
+
     <PropertyGroup>
       <ManifestJsonFile>$(IntermediateOutputPath)manifest.json</ManifestJsonFile>
       <ManifestJsonContent>
         <![CDATA[
 {
   "name": "$(AssemblyName)",
-  "version_number": "$(GitSemVer)",
+  "version_number": "$(NerdBankOutput)",
   "website_url": "$(RepositoryUrl)",
   "description": "$(Description)",
   "dependencies": $(_ManifestDependencies)
@@ -78,16 +88,11 @@
   <Target Name="GeneratePublishingZip"
           DependsOnTargets="GenerateManifestJson"
           AfterTargets="AfterBuild"
-          Inputs="@(Thunderstore);$(OutDir)**\*"
-          Outputs="$(PackageOutputPath)$(AssemblyName)-$(GitSemVerInfo).zip"
+          Inputs="@(Thunderstore);$(OutputPath)**\*"
+          Outputs="$(PackageOutputPath)$(AssemblyName)-$(AssemblyInformationalVersion).zip"
           Condition=" '$(Configuration)' == 'Release' ">
 
-    <PropertyGroup>
-      <PackageName>$(Company)-$(AssemblyName)-$(GitSemVerInfo)</PackageName>
-      <PackageDir>$(PackageOutputPath)\$(PackageName)\</PackageDir>
-      <PackageZip>$(PackageOutputPath)\$(PackageName).zip</PackageZip>
-    </PropertyGroup>
-    
+    <!-- Validate the output zip is fine -->
     <FindInList ItemSpecToFind="README.md"
                 List="@(Thunderstore)"
                 CaseSensitive="false">
@@ -95,32 +100,33 @@
     </FindInList>
 
     <Error Text="Missing README.md in ThunderStore ItemGroup" Condition=" '$(FoundReadme)' == '' " />
-    <Warning Text="Generated package is using dirty checkout" Condition=" '$(GitIsDirty)' != '0' " />
 
-    <!-- Copy the Thunderstore files into a directory -->
-    <MakeDir Directories="$(PackageDir)" />
-    <Copy SourceFiles="@(Thunderstore)"
-          DestinationFiles="@(Thunderstore->'$(PackageDir)%(PackagePath)%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true"
-          Retries="5"
-          RetryDelayMilliseconds="200">
-      <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
-    </Copy>
+    <!-- Generate zip target -->
+    <PropertyGroup>
+      <PackageName>$(Company)-$(AssemblyName)-$(AssemblyInformationalVersion)</PackageName>
+      <PackageDir>$(PackageOutputPath)\$(PackageName)\</PackageDir>
+      <PackageZip>$(PackageOutputPath)\$(PackageName).zip</PackageZip>
+    </PropertyGroup>
 
     <ItemGroup>
-      <OutputItems Include="$(OutDir)\**\*" />
+      <OutputItems Include="@(Thunderstore)" />
+      <OutputItems Include="$(OutputPath)**\*" />
+
+      <!-- net35 only supports dll.mdb -->
+      <OutputItems Remove="*.pdb" Condition=" '$(TargetFramework)' == 'net35' " />
     </ItemGroup>
 
+    <!-- Copy the output files into a package dir -->
+    <MakeDir Directories="$(PackageDir)" />
     <Copy SourceFiles="@(OutputItems)"
-          DestinationFolder="$(PackageDir)"
+          DestinationFiles="@(OutputItems->'$(PackageDir)%(PackagePath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"
           Retries="5"
           RetryDelayMilliseconds="200">
       <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
     </Copy>
     
-    <MakeDir Directories="$(PackageDir)" />
-    
+    <!-- Zip it -->
     <ZipDirectory DestinationFile="$(PackageZip)"
                   SourceDirectory="$(PackageDir)"
                   Overwrite="true" />

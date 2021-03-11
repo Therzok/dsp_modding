@@ -1,10 +1,10 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\config\Game.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\config\Repo.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\config\Unity.props" />
+
   <PropertyGroup Label="Build Configuration">
-    <RepositoryUrl>https://github.com/Therzok/dsp_modding</RepositoryUrl>
-    <Company>Therzok</Company>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
-    
-    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);VERBOSE_LOG;DEVELOPMENT</DefineConstants>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -14,30 +14,7 @@
     <GeneratePerformanceSensitiveAttribute>false</GeneratePerformanceSensitiveAttribute>
   </PropertyGroup>
 
-  <PropertyGroup Label="Dyson Sphere Program">
-    <SteamGameId>1366540</SteamGameId>
-    <UnityGameName>DSPGAME</UnityGameName>
-    <TargetFramework>net35</TargetFramework>
-  </PropertyGroup>
-
-  <PropertyGroup Label="GitInfo Setup">
-    <GitRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..'))</GitRoot>
-    <GitDir>$([System.IO.Path]::Combine('$(GitRoot)', '.git'))</GitDir>
-    <GitDefaultBranch>main</GitDefaultBranch>
-    <GitInfoReportImportance Condition=" '$(Configuration)' == 'Release' ">High</GitInfoReportImportance>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Unity Mono Debugger">
-    <UnityVersion>2018.4.12f1</UnityVersion>
-    <UnityHubRoot>C:\Program Files\Unity\Hub</UnityHubRoot>
-    <UnityInstall>$(UnityHubRoot)\Editor\$(UnityVersion)</UnityInstall>
-
-    <GameVersionBackup>D:\dsp_backups\</GameVersionBackup>
-    
-    <!--
-      1. Copy the Mono dll into the game folder $(UnityGameName)_Data\Mono
-      2. launchSettings.json: set environment variable: MONO_DEBUGGER_AGENT="transport=dt_socket,address=127.0.0.1:56000,defer=y"
-      3. Debug -> Attach Unity Debugger -> 127.0.0.1:56000
-      -->
-  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.3.37" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

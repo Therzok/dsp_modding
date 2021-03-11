@@ -1,6 +1,4 @@
-﻿using BepInEx.Configuration;
-
-using HarmonyLib;
+﻿using HarmonyLib;
 
 using System;
 using System.Collections.Generic;

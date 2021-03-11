@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <RepositoryUrl>https://github.com/Therzok/dsp_modding</RepositoryUrl>
+    <Company>Therzok</Company>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
+
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);VERBOSE_LOG;DEVELOPMENT</DefineConstants>
+  </PropertyGroup>
+</Project>

@@ -5,10 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitInfo" Version="2.1.2" PrivateAssets="All" />
-
-    <ProjectReference Include="..\PrefabBlocks\PrefabBlocks.csproj" ReferenceOutputAssembly="false" />
-    <PluginReference Include="PrefabBlocks" Author="Therzok" Assembly="PrefabBlocks.dll" PreferredVersion="0.1.0" />
+    <ProjectReference Include="..\PrefabBlocks\PrefabBlocks.csproj" Private="false" ReferenceOutputAssembly="false" />
+    <PluginReference Include="PrefabBlocks" Assembly="PrefabBlocks.dll" Author="Therzok" PreferredVersion="0.1.1" />
 
     <Thunderstore Include="README.md" />
   </ItemGroup>

@@ -1,30 +1,26 @@
 <Project>
   <PropertyGroup>
-    <OutDir>$(SteamGameInstallLocation)BepInEx\plugins\$(Company)-$(AssemblyName)\</OutDir>
-    <DocumentationFile>$(OutDir)\$(AssemblyName).xml</DocumentationFile>
-    
-    <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ResolveBepInExReferences</PrepareForBuildDependsOn>
-    <PrepareForRunDependsOn>$(PrepareForRunDependsOn);RunPdb2Mdb</PrepareForRunDependsOn>
+    <CompileDependsOn>GeneratePluginVersionInfo;$(CompileDependsOn)</CompileDependsOn>
+    <ResolveReferencesDependsOn>ResolveBepInExPluginReferences;$(ResolveReferencesDependsOn)</ResolveReferencesDependsOn>
+    <PrepareForRunDependsOn>RunPdb2Mdb;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
   </PropertyGroup>
 
   <!-- Generate PluginInfo.cs for plugins -->
   <Target Name="GeneratePluginVersionInfo"
-          DependsOnTargets="GitSetVersions"
-          BeforeTargets="BeforeCompile;CoreCompile"
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(IntermediateOutputPath)$(MSBuildProjectName).PluginInfo.g.cs">
     <PropertyGroup>
       <PluginInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).PluginInfo.g.cs</PluginInfoFile>
       <PluginInfoContent>
         <![CDATA[
-partial class ThisAssembly
+static partial class ThisAssembly
 {
     public partial class Plugin
     {
       public const string Authors = "org.$(Company).dsp"%3B
       public const string GUID = Authors + ".$(AssemblyName)"%3B
       public const string Name = "$(AssemblyTitle)"%3B
-      public const string Version = "$(GitSemVerFile)"%3B
+      public const string Version = ThisAssembly.AssemblyFileVersion%3B
       public const string HarmonyGUID = GUID + Version%3B
     }
 }
@@ -43,28 +39,9 @@ partial class ThisAssembly
       <FileWrites Include="$(PluginInfoFile)" />
     </ItemGroup>
   </Target>
-  
-  <Target Name="ResolveBepInExReferences"
-          Returns="@(Reference)"
-          DependsOnTargets="FindSteamGame">
-
-    <PropertyGroup>
-      <PluginsPath>$(SteamGameInstallLocation)BepInEx\plugins\</PluginsPath>
-      <OutDir>$(PluginsPath)$(Company)-$(AssemblyName)\</OutDir>
-      <DocumentationFile>$(OutDir)\$(AssemblyName).xml</DocumentationFile>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <Reference Include="@(BIEReference->'$(SteamGameInstallLocation)BepInEx\core\%(Identity)')"
-                 Private="False"
-                 SpecificVersion="true" />
-    </ItemGroup>
-  </Target>
 
   <!-- Resolve PluginReference items -->
   <PropertyGroup>
-    <!-- Inject into references resolving -->
-    <ResolveAssemblyReferencesDependsOn>ResolveBepInExPluginReferences;$(ResolveAssemblyReferencesDependsOn)</ResolveAssemblyReferencesDependsOn>
   </PropertyGroup>
 
   <UsingTask TaskName="ResolveBepInExPluginAssemblies"
@@ -124,15 +101,8 @@ partial class ThisAssembly
   </UsingTask>
 
   <Target Name="ResolveBepInExPluginReferences"
-          Returns="@(ReferencePath)"
-          DependsOnTargets="FindSteamGame"
+          Returns="@(Reference)"
           Condition=" '@(PluginReference)' != '' ">
-
-    <!-- Steam install lookup of plugins -->
-    <PropertyGroup>
-      <PluginsPath>$(SteamGameInstallLocation)BepInEx\plugins\</PluginsPath>
-      <!-- TODO DSP store, local build: how to ensure it's installed though? -->
-    </PropertyGroup>
 
     <ItemGroup Label="Plugin dependency resolution for one level only">
       <!--
@@ -140,7 +110,7 @@ partial class ThisAssembly
         Workaround: ProjectReference ReferenceOutputAssembly=false
       -->
 
-      <UnresolvedPluginReference Include="@(PluginReference)" />
+      <UnresolvedPluginReference Include="@(PluginReference)" Condition=" '%(PluginReference.Assembly)' != '' " />
 
       <!-- Try resolving from project -->
       <PluginAssemblyReference Include="@(UnresolvedPluginReference)"
@@ -170,49 +140,11 @@ partial class ThisAssembly
 
     <ItemGroup>
       <!-- TODO: Parse manifest or assembly to get dependency real name or dependencies -->
-      <ReferencePath Include="@(ResolvedPluginAssemblyReference)"
+      <Reference Include="@(ResolvedPluginAssemblyReference)"
                      Private="false"
                      SpecificVersion="true" />
     </ItemGroup>
     
     <Warning Text="Could not resolve plugin reference '%(UnresolvedPluginReference.Identity)' " Condition=" '%(UnresolvedPluginReference.Identity)' != '' " />
-  </Target>
-
-
-  <Target Name="RunPdb2Mdb"
-          Inputs="@(MainAssembly)"
-          Outputs="@(MainAssembly->'%(Identity).mdb')"
-          DependsOnTargets="CopyFilesToOutputDirectory">
-    <PropertyGroup>
-      <Pdb2MdbUrl>https://gist.github.com/jbevain/ba23149da8369e4a966f/raw/36b3cdd4dd149ab966bbb48141ef8ee2d37c890f/pdb2mdb.exe</Pdb2MdbUrl>
-    </PropertyGroup>
-    
-    <ItemGroup>
-      <Pdb2MdbInput Include="@(MainAssembly)" />
-      <Pdb2MdbOutput Include="@(MainAssembly->'%(Identity).mdb')" />
-    </ItemGroup>
-    
-    <DownloadFile SourceUrl="$(Pdb2MdbUrl)"
-                  DestinationFolder="$(IntermediateOutputPath)">
-      <Output TaskParameter="DownloadedFile"
-              PropertyName="Pdb2MdbTool" />
-    </DownloadFile>
-
-    <Exec Command="&quot;$(Pdb2MdbTool)&quot; &quot;%(Pdb2MdbInput.Identity)&quot;"
-          WorkingDirectory="@(Pdb2MdbInput->'%(rootdir)%(directory)')">
-      <Output TaskParameter="ExitCode"
-              PropertyName="Pdb2MdbExitCode" />
-    </Exec>
-  
-    <Warning Text="Failed to run Pdb2Mdb $(Pdb2MdbExitCode)"
-             Condition=" $(Pdb2MdbExitCode) != 0 " />
- 
-    <Warning Text="Missing mdb for assembly @(Pdb2MdbOutput)"
-             Condition=" !Exists(%(FullPath)) " />
-  
-    <ItemGroup>
-      <FileWrites Include="@(Pdb2MdbOutput)" />
-      <FileWrites Include="$(IntermediateOutputPath)pdb2mdb.exe" />
-    </ItemGroup>
   </Target>
 </Project>

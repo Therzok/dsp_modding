@@ -1,4 +1,10 @@
 <Project>
+  <PropertyGroup>
+    <PluginsPath>$(GameInstallLocation)BepInEx\plugins\</PluginsPath>
+    <OutputPath>$(PluginsPath)$(Company)-$(MSBuildProjectName)\</OutputPath>
+      <!-- TODO DSP store, local build: how to ensure it's installed though? -->
+  </PropertyGroup>
+
   <ItemGroup Label="BepInExReferences">
     <PackageReference Include="BepInEx.Analyzers" Version="1.0.4" PrivateAssets="all" />
     
@@ -14,5 +20,9 @@
 
     <BIEReference Include="MonoMod.RuntimeDetour.dll" />
     <BIEReference Include="MonoMod.Utils.dll" />
+
+    <Reference Include="@(BIEReference->'$(GameInstallLocation)BepInEx\core\%(Identity)')"
+               Private="False"
+               SpecificVersion="true" />
   </ItemGroup>
 </Project>

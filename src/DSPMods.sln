@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{6098CA
 		..\.editorconfig = ..\.editorconfig
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
+		version.json = version.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderSaves", "OrderSaves\OrderSaves.csproj", "{D323712C-5082-4C9E-BE83-D84A6F8A99CC}"

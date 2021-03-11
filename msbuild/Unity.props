@@ -1,12 +1,16 @@
 <Project>
+  <PropertyGroup>
+    <UnityAssembliesPath>$(GameInstallLocation)$(UnityGameName)_Data\Managed\</UnityAssembliesPath>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
-    <!-- Need pdb2mdb, they're useless until then -->
+    <!-- Always generate debug information -->
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
   </PropertyGroup>
 
-  <!-- Other target frameworks? -->
-  <ItemGroup Label="Unity BCL .NET 3.5" Condition=" '$(TargetFramework)' == 'net35' ">
+  <ItemGroup Label="BCL .NET 3.5" Condition=" '$(TargetFramework)' == 'net35' ">
+    <!-- TODO: Maybe resolve from actual Unity app? -->
     <PackageReference Include="jnm2.ReferenceAssemblies.net35" Version="1.0.1" PrivateAssets="All" />
   </ItemGroup>
 
@@ -26,5 +30,7 @@
     <UnityReference Include="UnityEngine.UIElementsModule.dll" />
     <UnityReference Include="UnityEngine.UIModule.dll" />
     <UnityReference Include="Unity.TextMeshPro.dll" />
+
+    <Reference Include="@(UnityReference->'$(UnityAssembliesPath)%(Identity)')" Private="False" SpecificVersion="true"/>
   </ItemGroup>
 </Project>

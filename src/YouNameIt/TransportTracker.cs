@@ -20,6 +20,7 @@ namespace YouNameIt
         TextMeshPro[] _texts = ArrayUtil.Empty<TextMeshPro>();
 
         public PlanetTransport Transport { get; private set; }
+        GameObject _rootTextContainer;
 
         public TransportTracker(ManualLogSource log, ConfigEntry<TrackedStations> trackedStations)
         {
@@ -34,6 +35,9 @@ namespace YouNameIt
             Debug.Assert(Transport == null, $"Transport already registered {Transport.planet.id}");
 
             Transport = transport;
+
+            _rootTextContainer = new GameObject(nameof(TransportTracker));
+            _rootTextContainer.transform.SetParent(transport.planet.gameObject.transform, false);
 
             _texts = new TextMeshPro[transport.stationPool.Length];
 
@@ -58,6 +62,7 @@ namespace YouNameIt
                 TextMeshPro text = _texts[i];
                 if (text != null)
                 {
+                    GameObject.Destroy(text.gameObject);
                     text.gameObject.SetActive(false);
                 }
             }
@@ -85,12 +90,11 @@ namespace YouNameIt
 
             ResizeArray(ref _texts, station.id);
 
-            Transform parentPlanet = Transport.planet.gameObject.transform;
             GameObject go;
 
             if (!TryGet(station.id, out TextMeshPro text))
             {
-                go = GameObject.Instantiate(PrefabBlocks.PrefabManager.Instance.WorldText, parentPlanet);
+                go = GameObject.Instantiate(PrefabBlocks.PrefabManager.Instance.WorldText, _rootTextContainer.transform);
                 text = go.GetComponent<TextMeshPro>();
 
                 text.fontSizeMin = 60;
@@ -107,7 +111,7 @@ namespace YouNameIt
 
             // transform init
             go.transform.localPosition = newPos;
-            go.transform.LookAt(parentPlanet.position);
+            go.transform.LookAt(_rootTextContainer.transform.position);
 
             // text props
 
