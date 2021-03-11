@@ -5,6 +5,7 @@
       <!-- TODO DSP store, local build: how to ensure it's installed though? -->
   </PropertyGroup>
 
+  <!-- Add BepInEx and Harmony references -->
   <ItemGroup Label="BepInExReferences">
     <PackageReference Include="BepInEx.Analyzers" Version="1.0.4" PrivateAssets="all" />
     

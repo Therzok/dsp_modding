@@ -5,7 +5,7 @@
     <PrepareForRunDependsOn>RunPdb2Mdb;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
   </PropertyGroup>
 
-  <!-- Generate PluginInfo.cs for plugins -->
+  <!-- Generate PluginInfo.cs for the current -->
   <Target Name="GeneratePluginVersionInfo"
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(IntermediateOutputPath)$(MSBuildProjectName).PluginInfo.g.cs">
@@ -40,6 +40,7 @@ static partial class ThisAssembly
     </ItemGroup>
   </Target>
 
+  <!-- Resolves plugin assemblies from actual plugin reference directories -->
   <UsingTask TaskName="ResolveBepInExPluginAssemblies"
              TaskFactory="RoslynCodeTaskFactory"
              AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
@@ -96,6 +97,7 @@ static partial class ThisAssembly
     </Task>
   </UsingTask>
 
+  <!-- This target handles looking up possible variations of Author and Plugin name in the plugins directory -->
   <Target Name="ResolveBepInExPluginReferences"
           Returns="@(Reference)"
           Condition=" '@(PluginReference)' != '' ">

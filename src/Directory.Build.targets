@@ -1,5 +1,6 @@
 <Project>
 
+  <!-- Import main targets -->
   <Import Project="$(MSBuildThisFileDirectory)..\msbuild\BepInEx.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\msbuild\Unity.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\msbuild\Thunderstore.targets" />
