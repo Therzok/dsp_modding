@@ -22,6 +22,7 @@ namespace SaveTheWindows
     public sealed class SaveTheWindowsPlugin : BaseUnityPlugin
     {
         readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
+
         readonly WindowSerializer _serializer;
         RectTransform[] _transformsArray = ArrayUtil.Empty<RectTransform>();
         readonly Dictionary<string, RectTransform> _transforms = new Dictionary<string, RectTransform>(64, StringComparer.Ordinal);
@@ -31,7 +32,7 @@ namespace SaveTheWindows
         /// </summary>
         public SaveTheWindowsPlugin()
         {
-            _serializer = new WindowSerializer(Config, Logger);
+            _serializer = new WindowSerializer(Logger);
         }
 
         void Awake()
@@ -52,6 +53,7 @@ namespace SaveTheWindows
             // Unhandled classes:
             // UIWindow where canDrag = true
             const string UISource = "UI Root/Overlay Canvas/In Game/Windows";
+
             long token = 0;
 
             Logger.DevMeasureStart(ref token);

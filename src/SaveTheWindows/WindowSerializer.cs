@@ -16,7 +16,7 @@ namespace SaveTheWindows
     {
         readonly ManualLogSource _log;
 
-        public WindowSerializer(ConfigFile config, ManualLogSource log)
+        public WindowSerializer(ManualLogSource log)
         {
             _log = log;
         }
@@ -26,10 +26,18 @@ namespace SaveTheWindows
             using (var reader = new BinaryReader(File.OpenRead(saveFileName)))
             {
                 int version = reader.ReadInt32(); // Version
-                if (version != 1 || source != reader.ReadString())
+                if (version != 1)
                 {
-                    _log.LogWarning("Version mismatch, expected '1' got " + source);
+                    _log.LogWarning(string.Format("Version mismatch, expected '{0}' got '{1}'", "1", version));
                     return false;
+                }
+
+                string currentSource = reader.ReadString();
+                if (source != currentSource)
+                {
+                    _log.LogWarning(string.Format("Version mismatch, expected '{0}' got '{1}'", source, currentSource));
+                    return false;
+
                 }
 
                 int count = reader.ReadInt32();
@@ -42,7 +50,11 @@ namespace SaveTheWindows
 
                     if (windows.TryGetValue(name, out RectTransform window))
                     {
-                        window.anchoredPosition.Set(x, y);
+                        window.anchoredPosition = new Vector2(x, y);
+                    }
+                    else
+                    {
+                        _log.LogWarning(string.Format("Discarding saved window position '{0}'", name));
                     }
                 }
             }

@@ -81,7 +81,6 @@
       <FileWrites Include="$(ManifestJsonFile)" />
 
       <Thunderstore Include="$(ManifestJsonFile)" />
-      <Thunderstore Include="$(OutputPath)\**\*" />
     </ItemGroup>
   </Target>
 
@@ -109,30 +108,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <OutputItems Include="@(Thunderstore)" />
-      <OutputItems Include="$(OutputPath)**\*" />
-
-      <!-- net35 only supports dll.mdb -->
-      <OutputItems Remove="*.pdb" Condition=" '$(TargetFramework)' == 'net35' " />
+      <PackageItems Include="@(Thunderstore)" />
+      <_OutputItems Include="$(OutputPath)**\*" />
+      <PackageItems Include="@(_OutputItems)" Condition=" '$(TargetFramework)' != 'net35' "/>
+      <PackageItems Include="@(_OutputItems)" Condition=" '%(Extension)' != '.pdb' AND '$(TargetFramework)' == 'net35' "/>
     </ItemGroup>
 
     <!-- Copy the output files into a package dir -->
     <MakeDir Directories="$(PackageDir)" />
-    <Copy SourceFiles="@(OutputItems)"
-          DestinationFiles="@(OutputItems->'$(PackageDir)%(PackagePath)%(RecursiveDir)%(Filename)%(Extension)')"
+    <Copy SourceFiles="@(PackageItems)"
+          DestinationFiles="@(PackageItems->'$(PackageDir)%(PackagePath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"
           Retries="5"
-          RetryDelayMilliseconds="200">
-      <Output TaskParameter="CopiedFiles" ItemName="ToClean"/>
-    </Copy>
+          RetryDelayMilliseconds="200" />
     
     <!-- Zip it -->
     <ZipDirectory DestinationFile="$(PackageZip)"
                   SourceDirectory="$(PackageDir)"
                   Overwrite="true" />
-
-    <ItemGroup>
-      <FileWrites Include="@(ToClean);$(PackageZip)" />
-    </ItemGroup>
   </Target>
 </Project>
