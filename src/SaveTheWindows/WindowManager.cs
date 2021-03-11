@@ -33,7 +33,7 @@ namespace SaveTheWindows
 
         static string GetBackupFileName(string original)
         {
-            return original + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            return original + DateTime.Now.ToString(" yyyy-MM-dd_HH-mm-ss");
         }
 
         internal bool LoadData(WindowSerializer serializer, string source, Dictionary<string, RectTransform> transforms)

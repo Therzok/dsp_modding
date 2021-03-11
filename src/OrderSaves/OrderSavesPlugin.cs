@@ -25,7 +25,7 @@ namespace OrderSaves
         Func<UIGameSaveEntry, FileInfo> _getFileInfo;
         Func<UIGameSaveEntry, int> _getIndex;
 
-        readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
+        readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.GUID);
 
         void Awake()
         {

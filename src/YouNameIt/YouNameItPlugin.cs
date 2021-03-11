@@ -21,7 +21,7 @@ namespace YouNameIt
     [BepInDependency(ThisAssembly.Plugin.Authors + "." + nameof(PrefabBlocks))]
     public sealed class YouNameItPlugin : BaseUnityPlugin
     {
-        readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.HarmonyGUID);
+        readonly Harmony _harmony = new Harmony(ThisAssembly.Plugin.GUID);
         readonly LifetimeTrackerPool _trackerPool;
 
         /// <summary>

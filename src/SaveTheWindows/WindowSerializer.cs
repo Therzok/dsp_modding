@@ -15,6 +15,7 @@ namespace SaveTheWindows
     sealed class WindowSerializer
     {
         readonly ManualLogSource _log;
+        const int Version = 1;
 
         public WindowSerializer(ManualLogSource log)
         {
@@ -30,7 +31,7 @@ namespace SaveTheWindows
             using (var reader = new BinaryReader(File.OpenRead(saveFileName)))
             {
                 int version = reader.ReadInt32(); // Version
-                if (version != 1)
+                if (version != Version)
                 {
                     _log.LogWarning(string.Format("Version mismatch, expected '{0}' got '{1}'", "1", version));
                     return false;
@@ -76,7 +77,7 @@ namespace SaveTheWindows
 
             using (var writer = new BinaryWriter(File.OpenWrite(saveFileName)))
             {
-                writer.Write(1); // Version
+                writer.Write(Version); // Version
                 writer.Write(source);
 
                 writer.Write(windows.Length);

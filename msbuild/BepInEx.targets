@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <CompileDependsOn>GeneratePluginVersionInfo;$(CompileDependsOn)</CompileDependsOn>
-    <ResolveReferencesDependsOn>ResolveBepInExPluginReferences;$(ResolveReferencesDependsOn)</ResolveReferencesDependsOn>
+    <ResolveAssemblyReferencesDependsOn>ResolveBepInExPluginReferences;$(ResolveAssemblyReferencesDependsOn)</ResolveAssemblyReferencesDependsOn>
     <PrepareForRunDependsOn>RunPdb2Mdb;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
   </PropertyGroup>
 
@@ -21,7 +21,6 @@ static partial class ThisAssembly
       public const string GUID = Authors + ".$(AssemblyName)"%3B
       public const string Name = "$(AssemblyTitle)"%3B
       public const string Version = ThisAssembly.AssemblyFileVersion%3B
-      public const string HarmonyGUID = GUID + Version%3B
     }
 }
 ]]>
@@ -40,10 +39,6 @@ static partial class ThisAssembly
       <FileWrites Include="$(PluginInfoFile)" />
     </ItemGroup>
   </Target>
-
-  <!-- Resolve PluginReference items -->
-  <PropertyGroup>
-  </PropertyGroup>
 
   <UsingTask TaskName="ResolveBepInExPluginAssemblies"
              TaskFactory="RoslynCodeTaskFactory"
