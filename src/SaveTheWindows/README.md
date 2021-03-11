@@ -14,8 +14,10 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 
 ## Changelog
 
+### v1.1
+
+* Fixes an issue that caused nothing to get saved! Sorry! 🙏
+
 ### v0.1.0
 
 * Initial release of the mod.
-
-## 

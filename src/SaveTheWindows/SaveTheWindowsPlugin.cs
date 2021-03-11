@@ -90,12 +90,14 @@ namespace SaveTheWindows
             {
                 CollectWindows();
 
+                _transforms.Clear();
+
                 foreach (UIWindowDrag window in _windows)
                 {
                     _transforms[window.name] = window.dragTrans;
                 }
 
-                _transforms.Clear();
+                _windows.Clear();
 
                 return _transforms;
             }
