@@ -19,10 +19,10 @@ Target methods matching by name:
 System.Void UILoadGameWindow::RefreshList()
 
 Relevant plugins:
-0. org.Therzok.dsp.TestThrow1.0.3.3
+1. org.Therzok.dsp.TestThrow1.0.3.3 - Therzok-TestThrow\TestThrow.dll
     Prefix[index=0]: static System.Void TestThrow.Patches::RefreshList(System.Collections.Generic.List`1<UIGameSaveEntry> ___entries)
 
-0. org.Therzok.dsp.IThrowToo0.1.2.2
+2. org.Therzok.dsp.IThrowToo0.1.2.2 - Therzok-IThrowToo\IThrowToo.dll
     Prefix[index=1]: static System.Void IThrowToo.Patches::RefreshList(System.Collections.Generic.List`1<UIGameSaveEntry> ___entries)
 
 ==================
@@ -44,8 +44,10 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 
 ## Changelog
 
+### v1.0.0
+
+* Improve error report to include Plugin Author, Name and dll.
+
 ### v0.1.0
 
 * Initial release of the mod.
-
-## 

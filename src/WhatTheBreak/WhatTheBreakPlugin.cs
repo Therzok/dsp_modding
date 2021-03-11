@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -36,9 +37,15 @@ namespace WhatTheBreak
             Logger.LogInfo("Loaded " + nameof(WhatTheBreakPlugin));
         }
 
+        sealed class OwnerData
+        {
+            public readonly StringBuilder Patches = new StringBuilder(128);
+            public readonly HashSet<Assembly> Assemblies = new HashSet<Assembly>();
+        }
+
         sealed class ExceptionData
         {
-            public readonly Dictionary<string, StringBuilder> PatchesByPlugin = new Dictionary<string, StringBuilder>(StringComparer.Ordinal);
+            public readonly Dictionary<string, OwnerData> PatchesByPlugin = new Dictionary<string, OwnerData>(StringComparer.Ordinal);
             public HashSet<MethodBase> PossibleMethods = new HashSet<MethodBase>();
             public string Stacktrace = string.Empty;
             public string Message = string.Empty;
@@ -46,18 +53,29 @@ namespace WhatTheBreak
 
             public void AddExceptionPatches(string prefix, ReadOnlyCollection<Patch> buckets)
             {
-                foreach (Patch patch in buckets)
+                for (int i = 0; i < buckets.Count; ++i)
                 {
-                    if (!PatchesByPlugin.TryGetValue(patch.owner, out StringBuilder sb))
+                    Patch patch = buckets[i];
+                    string owner = patch.owner;
+
+                    if (!PatchesByPlugin.TryGetValue(owner, out OwnerData ownerData))
                     {
-                        sb = new StringBuilder();
-                        PatchesByPlugin[patch.owner] = sb;
+                        ownerData = new OwnerData();
+                        PatchesByPlugin[owner] = ownerData;
                     }
 
-                    sb.Append(prefix).Append("[index=").Append(patch.index).Append("]: ");
-                    sb.AppendLine(patch.PatchMethod.FullDescription());
+                    ownerData.Patches
+                        .Append(prefix)
+                        .Append("[index=")
+                        .Append(patch.index)
+                        .Append("]: ")
+                        .AppendLine(patch.PatchMethod.FullDescription());
+
+                    ownerData.Assemblies.Add(patch.PatchMethod.DeclaringType.Assembly);
                 }
             }
+
+            static readonly string _pluginsSegment = Path.DirectorySeparatorChar + "plugins" + Path.DirectorySeparatorChar;
 
             public void GetClipboardText(StringBuilder sb)
             {
@@ -76,10 +94,28 @@ namespace WhatTheBreak
 
 
                 int i = 0;
-                foreach (KeyValuePair<string, StringBuilder> kvp in PatchesByPlugin)
+                foreach (KeyValuePair<string, OwnerData> kvp in PatchesByPlugin)
                 {
-                    sb.Append(i).Append(". ").AppendLine(kvp.Key);
-                    sb.Append('\t').AppendLine(kvp.Value.ToString());
+                    sb.Append(++i)
+                      .Append(". ")
+                      .Append(kvp.Key)
+                      .Append(" - ");
+
+                    foreach (Assembly assembly in kvp.Value.Assemblies)
+                    {
+                        string assemblyPath = assembly.Location;
+
+                        int relativePathIndex = assemblyPath.LastIndexOf(_pluginsSegment);
+                        if (relativePathIndex >= 0)
+                        {
+                            int start = relativePathIndex + _pluginsSegment.Length;
+                            sb.Append(assemblyPath, start, assemblyPath.Length - start);
+                        }
+                    }
+
+                    sb.AppendLine()
+                      .Append('\t')
+                      .AppendLine(kvp.Value.Patches.ToString());
                 }
             }
         }

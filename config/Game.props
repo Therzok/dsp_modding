@@ -1,7 +1,9 @@
 <Project>
   <!-- This is where most of the project configuration lives -->
   <PropertyGroup Label="Dyson Sphere Program">
-    <GameInstallLocation>K:\Programs\Steam\steamapps\common\Dyson Sphere Program\</GameInstallLocation>
+    <SteamInstallLocation>K:\Programs\Steam\</SteamInstallLocation>
+    <SteamLibraryLocation>K:\Programs\Steam\steamapps\</SteamLibraryLocation>
+    <GameInstallLocation>$(SteamLibraryLocation)common\Dyson Sphere Program\</GameInstallLocation>
     <SteamGameId>1366540</SteamGameId>
 
     <UnityGameName>DSPGAME</UnityGameName>
