@@ -1,8 +1,9 @@
 <Project>
   <PropertyGroup Label="Unity Mono Debugger">
     <UnityVersion>2018.4.12f1</UnityVersion>
-    <UnityHubRoot>C:\Program Files\Unity\Hub</UnityHubRoot>
-    <UnityInstall>$(UnityHubRoot)\Editor\$(UnityVersion)</UnityInstall>
+    <UnityHubRoot>C:\Program Files\Unity\Hub\</UnityHubRoot>
+    <UnityInstall>$(UnityHubRoot)Editor\$(UnityVersion)\</UnityInstall>
+    <UnityTestRunnerLocation>$(UnityInstall)Editor\Data\UnityExtensions\Unity\TestRunner\</UnityTestRunnerLocation>
 
     <GameVersionBackup>D:\dsp_backups\</GameVersionBackup>
     

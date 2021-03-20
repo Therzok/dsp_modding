@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
     <PluginsPath>$(GameInstallLocation)BepInEx\plugins\</PluginsPath>
-    <OutputPath>$(PluginsPath)$(Company)-$(MSBuildProjectName)\</OutputPath>
       <!-- TODO DSP store, local build: how to ensure it's installed though? -->
   </PropertyGroup>
 

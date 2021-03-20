@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <PackageIcon Condition=" '$(PackageIcon)' == '' ">$(MSBuildThisFileDirectory)..\ThunderStore\icon.png</PackageIcon>
+    <OutputPath>$(PluginsPath)$(Company)-$(MSBuildProjectName)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
