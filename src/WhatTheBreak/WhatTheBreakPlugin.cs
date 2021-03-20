@@ -206,43 +206,43 @@ namespace WhatTheBreak
             if (update)
             {
                 UIFatalErrorTip.instance.ShowError(errorString, stackTrace);
+            }
 
-                if (_btn == null)
+            if (_btn == null)
+            {
+                try
                 {
-                    try
+                    var go = GameObject.Find("UI Root/Overlay Canvas/Top Windows/Option Window/apply-button");
+                    var rect = (RectTransform)Instantiate(go).transform;
+
+                    rect.anchorMax = new Vector2(1, 0);
+                    rect.anchorMin = new Vector2(1, 0);
+                    rect.sizeDelta = new Vector2(120, 34);
+                    rect.pivot = new Vector2(1, 0);
+                    rect.anchoredPosition = new Vector2(-2, 2);
+
+                    rect.SetParent(UIFatalErrorTip.instance.transform, false);
+
+                    _btn = rect.gameObject.GetComponent<UIButton>();
+                    _btn.onClick += OnClick;
+
+                    // panel is 0.311, 0, 0.001, 0.902
+                    Image image = _btn.GetComponent<Image>();
+                    if (image != null)
                     {
-                        var go = GameObject.Find("UI Root/Overlay Canvas/Top Windows/Option Window/apply-button");
-                        var rect = (RectTransform)Instantiate(go).transform;
-
-                        rect.anchorMax = new Vector2(1, 0);
-                        rect.anchorMin = new Vector2(1, 0);
-                        rect.sizeDelta = new Vector2(120, 34);
-                        rect.pivot = new Vector2(1, 0);
-                        rect.anchoredPosition = new Vector2(-2, 2);
-
-                        rect.SetParent(UIFatalErrorTip.instance.transform, false);
-
-                        _btn = rect.gameObject.GetComponent<UIButton>();
-                        _btn.onClick += OnClick;
-
-                        // panel is 0.311, 0, 0.001, 0.902
-                        Image image = _btn.GetComponent<Image>();
-                        if (image != null)
-                        {
-                            image.color = new Color(0.8f, 0.1f, 0.1f, 1);
-                        }
-
-                        Text text = _btn.GetComponentInChildren<Text>();
-                        if (text != null)
-                        {
-                            text.text = "Copy to Clipboard";
-                        }
+                        image.color = new Color(0.8f, 0.1f, 0.1f, 1);
                     }
-                    catch (Exception e)
+
+                    Text text = _btn.GetComponentInChildren<Text>();
+                    if (text != null)
                     {
-                        gameObject.SetActive(false);
-                        Logger.LogWarning("Could not create copy button, disabling plugin: " + e.ToString());
+                        text.text = "Copy to Clipboard";
                     }
+                }
+                catch (Exception e)
+                {
+                    gameObject.SetActive(false);
+                    Logger.LogWarning("Could not create copy button, disabling plugin: " + e.ToString());
                 }
             }
         }
