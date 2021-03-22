@@ -15,7 +15,7 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 ## Changelog
 
 
-### v1.3
+### v1.1.5
 
 Use RectTransformUtility to clamp the pixel values to avoid aliasing issues.
 
