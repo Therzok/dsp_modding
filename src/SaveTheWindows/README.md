@@ -14,6 +14,11 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 
 ## Changelog
 
+
+### v1.3
+
+Use RectTransformUtility to clamp the pixel values to avoid aliasing issues.
+
 ### v1.1 Hotfix
 
 * Version in Thunderstore displaying 1.0.x instead of 1.1.x

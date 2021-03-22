@@ -22,11 +22,39 @@ namespace SaveTheWindows
             _log = log;
         }
 
+        bool TryGetUICanvas(out Canvas canvas)
+        {
+            const string UISource = "UI Root/Overlay Canvas";
+
+            canvas = null;
+
+            var overlayUI = GameObject.Find(UISource);
+            if (overlayUI == null)
+            {
+                _log.LogWarning("Could not find UI canvas");
+                return false;
+            }
+
+            canvas = overlayUI.GetComponent<Canvas>();
+            if (canvas == null)
+            {
+                _log.LogWarning("GameObject does not have Canvas component");
+                return false;
+            }
+
+            return true;
+        }
+
         internal bool LoadData(string saveFileName, string source, Dictionary<string, RectTransform> windows)
         {
             long token = 0;
 
             _log.DevMeasureStart(ref token);
+
+            if (!TryGetUICanvas(out Canvas canvas))
+            {
+                return false;
+            }
 
             using (var reader = new BinaryReader(File.OpenRead(saveFileName)))
             {
@@ -42,7 +70,6 @@ namespace SaveTheWindows
                 {
                     _log.LogWarning(string.Format("Version mismatch, expected '{0}' got '{1}'", source, currentSource));
                     return false;
-
                 }
 
                 int count = reader.ReadInt32();
@@ -55,7 +82,9 @@ namespace SaveTheWindows
 
                     if (windows.TryGetValue(name, out RectTransform window))
                     {
-                        window.anchoredPosition = new Vector2(x, y);
+                        var point = RectTransformUtility.PixelAdjustPoint(new Vector2(x, y), window, canvas);
+
+                        window.anchoredPosition = point;
                     }
                     else
                     {
