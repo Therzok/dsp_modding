@@ -44,6 +44,10 @@ For any 🐛 or issues with this mod, please report them over at [GitHub](https:
 
 ## Changelog
 
+### v1.1
+
+* Always show the button, not just when able to resolve the plugin.
+
 ### v1.0.0
 
 * Improve error report to include the plugin directory and assembly.
