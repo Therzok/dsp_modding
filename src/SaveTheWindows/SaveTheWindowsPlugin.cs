@@ -128,13 +128,11 @@ namespace SaveTheWindows
             {
                 // Unhandled classes:
                 // UIWindow where canDrag = true
-                const string UISource = "UI Root/Overlay Canvas/In Game/Windows";
 
-                GameObject windowRoot = GameObject.Find(UISource);
-                if (windowRoot != null)
+                Transform windows = UIRoot.instance.overlayCanvas.transform.Find("In Game/Windows");
+                if (windows != null)
                 {
-                    windowRoot.GetComponentsInChildren(includeInactive: true, _windows);
-                    // for types other than UIWindowDrag, we need to null check the components.
+                    windows.GetComponentsInChildren(true, _windows);
                 }
             }
         }
